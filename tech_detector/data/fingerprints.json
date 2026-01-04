@@ -1,0 +1,175 @@
+{
+    "technologies": {
+        "WordPress": {
+            "cats": [
+                1
+            ],
+            "website": "https://wordpress.org",
+            "headers": {
+                "X-Powered-By": "WordPress"
+            },
+            "meta": {
+                "generator": "WordPress"
+            },
+            "html": [
+                "wp-content",
+                "wp-includes"
+            ],
+            "scriptSrc": [
+                "wp-includes/js"
+            ],
+            "probe": {
+                "/robots.txt": "wp-admin",
+                "/feed": "<generator>WordPress"
+            }
+        },
+        "React": {
+            "cats": [
+                12
+            ],
+            "website": "https://reactjs.org",
+            "html": [
+                "data-reactroot",
+                "data-reactid"
+            ],
+            "scriptSrc": [
+                "react\\.production\\.min\\.js",
+                "react\\.development\\.js"
+            ],
+            "js": [
+                "React.createElement",
+                "React.version"
+            ]
+        },
+        "Vue.js": {
+            "cats": [
+                12
+            ],
+            "website": "https://vuejs.org",
+            "html": [
+                "data-v-[a-f0-9]+"
+            ],
+            "js": [
+                "Vue.version",
+                "__vue__"
+            ]
+        },
+        "Laravel": {
+            "cats": [
+                18
+            ],
+            "website": "https://laravel.com",
+            "cookies": {
+                "laravel_session": "",
+                "XSRF-TOKEN": ""
+            },
+            "headers": {
+                "Set-Cookie": "laravel_session"
+            }
+        },
+        "Nginx": {
+            "cats": [
+                22
+            ],
+            "website": "http://nginx.org",
+            "headers": {
+                "Server": "nginx"
+            },
+            "errorPage": "nginx"
+        },
+        "Docker": {
+            "cats": [
+                60
+            ],
+            "website": "https://www.docker.com",
+            "icon_hash": "-2092144342"
+        },
+        "Google Analytics": {
+            "cats": [
+                10
+            ],
+            "website": "https://google.com/analytics",
+            "scriptSrc": [
+                "google-analytics\\.com/analytics\\.js",
+                "googletagmanager\\.com/gtag/js"
+            ],
+            "html": [
+                "UA-[0-9]+-[0-9]+"
+            ]
+        },
+        "Tailwind CSS": {
+            "cats": [
+                66
+            ],
+            "website": "https://tailwindcss.com",
+            "html": [
+                "class=\"[^\"]*text-(?:blue|red|green|gray)-[0-9]{3}"
+            ]
+        },
+        "Bootstrap": {
+            "cats": [
+                66
+            ],
+            "website": "https://getbootstrap.com",
+            "scriptSrc": [
+                "bootstrap(?:\\.min)?\\.js"
+            ],
+            "html": [
+                "class=\"[^\"]*col-md-[0-9]"
+            ]
+        },
+        "jQuery": {
+            "cats": [
+                59
+            ],
+            "website": "https://jquery.com",
+            "scriptSrc": [
+                "jquery.*\\.js"
+            ],
+            "js": [
+                "jQuery.fn.jquery"
+            ]
+        },
+        "Next.js": {
+            "cats": [
+                12,
+                18
+            ],
+            "website": "https://nextjs.org",
+            "html": [
+                "id=\"__next\"",
+                "<script id=\"__NEXT_DATA__"
+            ],
+            "headers": {
+                "X-Powered-By": "Next.js"
+            },
+            "implies": [
+                "React"
+            ]
+        },
+        "Cloudflare": {
+            "cats": [
+                31
+            ],
+            "website": "https://cloudflare.com",
+            "headers": {
+                "cf-ray": "",
+                "server": "cloudflare"
+            },
+            "cookies": {
+                "__cfduid": ""
+            }
+        }
+    },
+    "categories": {
+        "1": "CMS",
+        "10": "Analytics",
+        "12": "JavaScript Frameworks",
+        "18": "Web Frameworks",
+        "22": "Web Servers",
+        "31": "CDN",
+        "59": "JavaScript Libraries",
+        "60": "Containers",
+        "66": "UI Frameworks"
+    }
+}
