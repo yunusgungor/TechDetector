@@ -11,11 +11,12 @@ def main():
     parser.add_argument("--verbose", "-v", action="store_true", help="Show detailed evidence")
     parser.add_argument("--deep", "-d", action="store_true", help="Enable Deep Crawler (scans sub-pages)")
     parser.add_argument("--report", "-r", action="store_true", help="Generate HTML Report")
+    parser.add_argument("--csv", action="store_true", help="Generate CSV Report")
     
     args = parser.parse_args()
     
     scanner = Scanner()
-    results, data, report_path = scanner.scan(args.url, deep_scan=args.deep, generate_report=args.report)
+    results, data, report_path, csv_path = scanner.scan(args.url, deep_scan=args.deep, generate_report=args.report, export_csv=args.csv)
     
     if args.json:
         output = [
@@ -43,6 +44,9 @@ def main():
     if report_path:
         print(f"\n[+] Report Generated: {report_path}")
         webbrowser.open('file://' + os.path.abspath(report_path))
+        
+    if csv_path:
+         print(f"[+] CSV Generated: {csv_path}")
 
 if __name__ == "__main__":
     import os

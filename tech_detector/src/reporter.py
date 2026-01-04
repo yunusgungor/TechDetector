@@ -11,6 +11,19 @@ class Reporter:
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
+    def generate_csv(self, url: str, results: List[DetectionResult]):
+        import csv
+        filename = f"report_{urlparse(url).netloc}_{int(datetime.now().timestamp())}.csv"
+        path = os.path.join(self.output_dir, filename)
+        
+        with open(path, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            writer.writerow(["Technology", "Category", "Confidence", "Version", "Evidence"])
+            for res in results:
+                writer.writerow([res.technology, res.category, f"{res.confidence}%", res.version or "", res.evidence])
+                
+        return path
+
     def generate_html(self, url: str, results: List[DetectionResult], scanned_urls: List[str]):
         filename = f"report_{urlparse(url).netloc}_{int(datetime.now().timestamp())}.html"
         path = os.path.join(self.output_dir, filename)
