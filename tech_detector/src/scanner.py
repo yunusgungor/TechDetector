@@ -269,6 +269,8 @@ class Scanner:
                 existing = existing_map[res.technology]
                 if res.confidence > existing.confidence:
                     existing.confidence = res.confidence
-                    existing.evidence = res.evidence # Update evidence too
+                    existing.evidence = res.evidence
+                    existing.category = res.category
+                    existing.version = res.version
             else:
                 main_list.append(res)

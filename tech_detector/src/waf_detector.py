@@ -52,11 +52,11 @@ class WAFDetector:
                     if ':' in sign:
                         key, val = sign.split(':', 1)
                         if key in headers_lower and val in headers_lower[key]:
-                            confidence += 50
+                            confidence += 100
                             evidence.append(f"Header: {key}={val}")
                     else:
                         if sign in headers_lower:
-                            confidence += 40
+                            confidence += 80
                             evidence.append(f"Header: {sign}")
 
             # Check Cookies
