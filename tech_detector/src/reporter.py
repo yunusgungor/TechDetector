@@ -120,7 +120,7 @@ class Reporter:
             <div class="container">
                 <div class="header">
                     <div class="title">
-                        <h1>Cyber Intelligence Report</h1>
+                        <h1>Cyber Intelligence Report (Grade: {sec_grade})</h1>
                         <p>{url} | {datetime.now().strftime('%Y-%m-%d %H:%M')}</p>
                     </div>
                     <div class="grade-badge">

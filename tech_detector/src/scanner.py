@@ -16,6 +16,9 @@ from .api_discovery import APIDiscovery
 from .file_fuzzer import FileFuzzer
 from .rdap_client import RDAPClient
 from .context_analyzer import ContextAnalyzer
+from .waf_detector import WAFDetector
+from .osint_collector import OSINTCollector
+from .cloud_recon import CloudRecon
 from .utils import DetectionResult, SiteData
 import json
 import os
@@ -46,6 +49,11 @@ class Scanner:
         self.file_fuzzer = FileFuzzer()
         self.rdap_client = RDAPClient()
         self.context_analyzer = ContextAnalyzer()
+        
+        # New Advanced Modules
+        self.waf_detector = WAFDetector()
+        self.osint_collector = OSINTCollector()
+        self.cloud_recon = CloudRecon()
 
     def scan(self, url: str, deep_scan=False, passive_mode=False, threads=5, generate_report=False, export_csv=False):
         all_results = []
@@ -107,6 +115,10 @@ class Scanner:
             print(f"[*] Fuzzing for Sensitive Files (.env, git, backups)...")
             file_results = self.file_fuzzer.scan(url)
             self._merge_results(all_results, file_results)
+
+            print(f"[*] Checking for Cloud Storage Assets (S3/Azure)...")
+            cloud_results = self.cloud_recon.scan(url)
+            self._merge_results(all_results, cloud_results)
         else:
             print("[*] Passive Mode: Skipping Port Scan, Subdomains, Error Provocation, API, Fuzzing.")
 
@@ -141,6 +153,14 @@ class Scanner:
             print("[*] Scanning for Secrets (Keys/Tokens)...")
             secret_results = self.secret_scanner.scan(root_data)
             self._merge_results(all_results, secret_results)
+            
+            # WAF Detection
+            waf_results = self.waf_detector.detect(root_data.headers, root_data.cookies)
+            self._merge_results(all_results, waf_results)
+            
+            # OSINT Collection
+            osint_results = self.osint_collector.collect(root_data.html)
+            self._merge_results(all_results, osint_results)
             
             # Context Analysis (On Root only usually enough)
             ctx_result = self.context_analyzer.analyze(root_data)
