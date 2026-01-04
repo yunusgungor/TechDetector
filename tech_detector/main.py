@@ -1,18 +1,21 @@
 import argparse
 import sys
 import json
+import webbrowser
 from src.scanner import Scanner
 
 def main():
-    parser = argparse.ArgumentParser(description="Advanced Web Technology Detector")
+    parser = argparse.ArgumentParser(description="Advanced Web Technology Detector (Professional Edition)")
     parser.add_argument("url", help="Target URL to scan")
     parser.add_argument("--json", action="store_true", help="Output in JSON format")
     parser.add_argument("--verbose", "-v", action="store_true", help="Show detailed evidence")
+    parser.add_argument("--deep", "-d", action="store_true", help="Enable Deep Crawler (scans sub-pages)")
+    parser.add_argument("--report", "-r", action="store_true", help="Generate HTML Report")
     
     args = parser.parse_args()
     
     scanner = Scanner()
-    results, data = scanner.scan(args.url)
+    results, data, report_path = scanner.scan(args.url, deep_scan=args.deep, generate_report=args.report)
     
     if args.json:
         output = [
@@ -37,5 +40,10 @@ def main():
             print(f"{r.technology:<20} | {r.category:<20} | {r.confidence:<5}% | {evidence}")
         print("-" * 50)
 
+    if report_path:
+        print(f"\n[+] Report Generated: {report_path}")
+        webbrowser.open('file://' + os.path.abspath(report_path))
+
 if __name__ == "__main__":
+    import os
     main()

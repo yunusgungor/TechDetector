@@ -20,8 +20,82 @@
             ],
             "probe": {
                 "/robots.txt": "wp-admin",
-                "/feed": "<generator>WordPress"
+                "/feed": "<generator>WordPress",
+                "/wp-json": "rest_route"
             }
+        },
+        "Joomla": {
+            "cats": [
+                1
+            ],
+            "website": "https://joomla.org",
+            "meta": {
+                "generator": "Joomla"
+            },
+            "html": [
+                "option=com_content"
+            ],
+            "headers": {
+                "X-Content-Encoded-By": "Joomla"
+            }
+        },
+        "Drupal": {
+            "cats": [
+                1
+            ],
+            "website": "https://drupal.org",
+            "meta": {
+                "generator": "Drupal"
+            },
+            "headers": {
+                "X-Generator": "Drupal"
+            },
+            "html": [
+                "Drupal.settings"
+            ]
+        },
+        "Shopify": {
+            "cats": [
+                6
+            ],
+            "website": "https://shopify.com",
+            "html": [
+                "cdn.shopify.com",
+                "Shopify.theme"
+            ],
+            "scriptSrc": [
+                "cdn.shopify.com"
+            ]
+        },
+        "Magento": {
+            "cats": [
+                6
+            ],
+            "website": "https://magento.com",
+            "scriptSrc": [
+                "mage/cookies.js"
+            ],
+            "headers": {
+                "X-Magento-Vary": ""
+            },
+            "html": [
+                "type=\"text/x-magento-init\""
+            ]
+        },
+        "WooCommerce": {
+            "cats": [
+                6
+            ],
+            "website": "https://woocommerce.com",
+            "html": [
+                "woocommerce-product-gallery"
+            ],
+            "meta": {
+                "generator": "WooCommerce"
+            },
+            "implies": [
+                "WordPress"
+            ]
         },
         "React": {
             "cats": [
@@ -54,6 +128,60 @@
                 "__vue__"
             ]
         },
+        "Next.js": {
+            "cats": [
+                12,
+                18
+            ],
+            "website": "https://nextjs.org",
+            "html": [
+                "id=\"__next\"",
+                "<script id=\"__NEXT_DATA__"
+            ],
+            "headers": {
+                "X-Powered-By": "Next.js"
+            },
+            "implies": [
+                "React"
+            ]
+        },
+        "Nuxt.js": {
+            "cats": [
+                12,
+                18
+            ],
+            "website": "https://nuxtjs.org",
+            "html": [
+                "id=\"__nuxt\"",
+                "<script>window.__NUXT__"
+            ],
+            "headers": {
+                "X-Powered-By": "Nuxt"
+            },
+            "implies": [
+                "Vue.js"
+            ]
+        },
+        "Framer": {
+            "cats": [
+                1,
+                66
+            ],
+            "website": "https://framer.com",
+            "headers": {
+                "Server": "Framer"
+            },
+            "meta": {
+                "generator": "Framer"
+            },
+            "html": [
+                "framerusercontent\\.com",
+                "<!-- Made in Framer"
+            ],
+            "implies": [
+                "React"
+            ]
+        },
         "Laravel": {
             "cats": [
                 18
@@ -67,6 +195,46 @@
                 "Set-Cookie": "laravel_session"
             }
         },
+        "Django": {
+            "cats": [
+                18
+            ],
+            "website": "https://djangoproject.com",
+            "cookies": {
+                "csrftoken": ""
+            },
+            "html": [
+                "csrfmiddlewaretoken"
+            ]
+        },
+        "Express": {
+            "cats": [
+                18
+            ],
+            "website": "https://expressjs.com",
+            "headers": {
+                "X-Powered-By": "Express"
+            }
+        },
+        "Spring Boot": {
+            "cats": [
+                18
+            ],
+            "website": "https://spring.io/projects/spring-boot",
+            "icon_hash": "116323821"
+        },
+        "ASP.NET": {
+            "cats": [
+                18
+            ],
+            "website": "https://dotnet.microsoft.com/apps/aspnet",
+            "headers": {
+                "X-Powered-By": "ASP.NET"
+            },
+            "cookies": {
+                "ASP.NET_SessionId": ""
+            }
+        },
         "Nginx": {
             "cats": [
                 22
@@ -77,12 +245,65 @@
             },
             "errorPage": "nginx"
         },
+        "Apache": {
+            "cats": [
+                22
+            ],
+            "website": "https://httpd.apache.org/",
+            "headers": {
+                "Server": "Apache"
+            }
+        },
         "Docker": {
             "cats": [
                 60
             ],
             "website": "https://www.docker.com",
             "icon_hash": "-2092144342"
+        },
+        "Kubernetes": {
+            "cats": [
+                60
+            ],
+            "website": "https://kubernetes.io",
+            "headers": {
+                "X-Kubernetes-PF": ""
+            }
+        },
+        "Cloudflare": {
+            "cats": [
+                31
+            ],
+            "website": "https://cloudflare.com",
+            "headers": {
+                "cf-ray": "",
+                "server": "cloudflare"
+            },
+            "cookies": {
+                "__cfduid": ""
+            }
+        },
+        "AWS": {
+            "cats": [
+                62
+            ],
+            "website": "https://aws.amazon.com",
+            "headers": {
+                "X-Amz-Id-2": "",
+                "X-Amz-Request-Id": ""
+            },
+            "dns": {
+                "CNAME": "aws.com"
+            }
+        },
+        "Google Cloud": {
+            "cats": [
+                62
+            ],
+            "website": "https://cloud.google.com",
+            "headers": {
+                "Metadata-Flavor": "Google"
+            }
         },
         "Google Analytics": {
             "cats": [
@@ -95,6 +316,30 @@
             ],
             "html": [
                 "UA-[0-9]+-[0-9]+"
+            ]
+        },
+        "Facebook Pixel": {
+            "cats": [
+                10
+            ],
+            "website": "https://facebook.com/business/learn/facebook-pixel",
+            "scriptSrc": [
+                "connect\\.facebook\\.net/.*fbevents\\.js"
+            ],
+            "html": [
+                "fbq\\('init'"
+            ]
+        },
+        "Hotjar": {
+            "cats": [
+                10
+            ],
+            "website": "https://hotjar.com",
+            "scriptSrc": [
+                "static.hotjar.com"
+            ],
+            "js": [
+                "hj"
             ]
         },
         "Tailwind CSS": {
@@ -130,78 +375,59 @@
                 "jQuery.fn.jquery"
             ]
         },
-        "Next.js": {
+        "Stripe": {
             "cats": [
-                12,
-                18
+                41
             ],
-            "website": "https://nextjs.org",
-            "html": [
-                "id=\"__next\"",
-                "<script id=\"__NEXT_DATA__"
-            ],
-            "headers": {
-                "X-Powered-By": "Next.js"
-            },
-            "implies": [
-                "React"
-            ]
-        },
-        "Framer": {
-            "cats": [
-                1,
-                66
-            ],
-            "website": "https://framer.com",
-            "headers": {
-                "Server": "Framer"
-            },
-            "meta": {
-                "generator": "Framer"
-            },
-            "html": [
-                "framerusercontent\\.com",
-                "<!-- Made in Framer"
-            ],
-            "implies": [
-                "React"
-            ]
-        },
-        "Facebook Pixel": {
-            "cats": [
-                10
-            ],
-            "website": "https://facebook.com/business/learn/facebook-pixel",
+            "website": "https://stripe.com",
             "scriptSrc": [
-                "connect\\.facebook\\.net/.*fbevents\\.js"
+                "js.stripe.com"
             ],
             "html": [
-                "fbq\\('init'"
+                "Stripe\\("
             ]
         },
-        "Cloudflare": {
+        "reCAPTCHA": {
             "cats": [
-                31
+                16
             ],
-            "website": "https://cloudflare.com",
-            "headers": {
-                "cf-ray": "",
-                "server": "cloudflare"
-            },
-            "cookies": {
-                "__cfduid": ""
-            }
+            "website": "https://www.google.com/recaptcha/",
+            "scriptSrc": [
+                "google.com/recaptcha",
+                "gstatic.com/recaptcha"
+            ],
+            "html": [
+                "g-recaptcha"
+            ]
+        },
+        "Sentry": {
+            "cats": [
+                13
+            ],
+            "website": "https://sentry.io",
+            "scriptSrc": [
+                "browser.sentry-cdn.com",
+                "js.sentry-cdn.com"
+            ],
+            "js": [
+                "Sentry"
+            ]
         }
     },
     "categories": {
         "1": "CMS",
+        "6": "Ecommerce",
         "10": "Analytics",
         "12": "JavaScript Frameworks",
+        "13": "Issue Trackers",
+        "16": "Security",
         "18": "Web Frameworks",
         "22": "Web Servers",
         "31": "CDN",
+        "41": "Payment Processors",
         "59": "JavaScript Libraries",
         "60": "Containers",
+        "62": "PaaS / IaaS",
         "66": "UI Frameworks"
     }
 }
