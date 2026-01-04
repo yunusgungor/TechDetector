@@ -12,7 +12,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 class Fetcher:
-    def __init__(self, timeout=10, max_assets=5):
+    def __init__(self, timeout=10, max_assets=20):
         self.timeout = timeout
         self.max_assets = max_assets
         self.headers = {

@@ -11,6 +11,8 @@ from .port_scanner import PortScanner
 from .robots_intel import RobotsIntelligence
 from .error_fingerprinter import ErrorFingerprinter
 from .geoip_analyzer import GeoIPAnalyzer
+from .secret_scanner import SecretScanner
+from .api_discovery import APIDiscovery
 from .utils import DetectionResult, SiteData
 import json
 import os
@@ -36,6 +38,8 @@ class Scanner:
         self.robots_intel = RobotsIntelligence()
         self.error_printer = ErrorFingerprinter()
         self.geoip = GeoIPAnalyzer()
+        self.secret_scanner = SecretScanner()
+        self.api_discovery = APIDiscovery()
 
     def scan(self, url: str, deep_scan=False, passive_mode=False, threads=5, generate_report=False, export_csv=False):
         all_results = []
@@ -84,8 +88,12 @@ class Scanner:
             print(f"[*] Error Fingerprinting...")
             error_results = self.error_printer.analyze(url)
             self._merge_results(all_results, error_results)
+            
+            print(f"[*] Discovering API Endpoints...")
+            api_results = self.api_discovery.scan(url)
+            self._merge_results(all_results, api_results)
         else:
-            print("[*] Passive Mode: Skipping Port Scan, Subdomains, Error Provocation.")
+            print("[*] Passive Mode: Skipping Port Scan, Subdomains, Error Provocation, API Discovery.")
 
         # --- Phase 3: Content Analysis (Crawling) ---
         if deep_scan:
@@ -113,6 +121,11 @@ class Scanner:
             # Security Audit
             sec_results = self.sec_auditor.audit(root_data.headers)
             self._merge_results(all_results, sec_results)
+            
+            # Secret Scanning
+            print("[*] Scanning for Secrets (Keys/Tokens)...")
+            secret_results = self.secret_scanner.scan(root_data)
+            self._merge_results(all_results, secret_results)
             
             crawler.extract_links(root_data.html, root_data.final_url)
 
@@ -146,6 +159,11 @@ class Scanner:
                                 scanned_urls.append(u)
                                 page_results = self.engine.analyze(data)
                                 self._merge_results(all_results, page_results)
+                                
+                                # Scan secrets in subpages
+                                page_secrets = self.secret_scanner.scan(data)
+                                self._merge_results(all_results, page_secrets)
+                                
                                 if len(scanned_urls) < crawler.max_pages:
                                     crawler.extract_links(data.html, data.final_url)
                         except Exception:
@@ -162,6 +180,10 @@ class Scanner:
             
             print(f"[*] Analyzing content...")
             all_results.extend(self.engine.analyze(data)) 
+            
+            print("[*] Scanning for Secrets...")
+            secret_results = self.secret_scanner.scan(data)
+            self._merge_results(all_results, secret_results)
 
         # --- Phase 4: Reporting ---
         all_results.sort(key=lambda x: x.confidence, reverse=True)
