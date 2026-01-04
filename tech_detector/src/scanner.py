@@ -23,12 +23,12 @@ from typing import List, Dict
 import concurrent.futures
 
 class Scanner:
-    def __init__(self, fingerprints_path=None):
+    def __init__(self, fingerprints_path=None, proxy=None):
         if fingerprints_path is None:
             base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             fingerprints_path = os.path.join(base_dir, 'data', 'fingerprints.json')
             
-        self.fetcher = Fetcher()
+        self.fetcher = Fetcher(proxy=proxy)
         self.engine = RulesEngine(fingerprints_path)
         self.reporter = Reporter()
         self.ssl_inspector = SSLInspector()

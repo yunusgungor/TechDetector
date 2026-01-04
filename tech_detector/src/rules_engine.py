@@ -8,13 +8,14 @@ class RulesEngine:
     def __init__(self, fingerprints_path: str):
         with open(fingerprints_path, 'r') as f:
             self.data = json.load(f)
-        self.technologies = self.data.get('technologies', {})
-        self.categories = self.data.get('categories', {})
+        self.technologies = self.data.get('technologies', [])
+        # self.categories is no longer needed as category name is embedded
 
     def analyze(self, site_data: SiteData) -> List[DetectionResult]:
         results = []
         
-        for tech_name, rules in self.technologies.items():
+        for rule in self.technologies:
+            tech_name = rule.get('name')
             confidence = 0
             evidence = []
             version = None
@@ -26,8 +27,8 @@ class RulesEngine:
                     version = match.group(1)
 
             # 1. Check Headers
-            if 'headers' in rules:
-                for h_key, h_pattern in rules['headers'].items():
+            if 'headers' in rule:
+                for h_key, h_pattern in rule['headers'].items():
                     # Case insensitive header search
                     site_header_val = next((v for k, v in site_data.headers.items() if k.lower() == h_key.lower()), None)
                     if site_header_val:
@@ -42,15 +43,15 @@ class RulesEngine:
                                 update_version(match)
 
             # 2. Check Cookies
-            if 'cookies' in rules:
-                for c_key, c_pattern in rules['cookies'].items():
+            if 'cookies' in rule:
+                for c_key, c_pattern in rule['cookies'].items():
                     if c_key in site_data.cookies:
                         confidence += 50
                         evidence.append(f"Cookie: {c_key}")
 
             # 3. Check Meta Tags
-            if 'meta' in rules:
-                for m_key, m_pattern in rules['meta'].items():
+            if 'meta' in rule:
+                for m_key, m_pattern in rule['meta'].items():
                     if m_key.lower() in site_data.meta_tags:
                         val = site_data.meta_tags[m_key.lower()]
                         match = re.search(m_pattern, val, re.IGNORECASE)
@@ -59,9 +60,9 @@ class RulesEngine:
                             evidence.append(f"Meta: {m_key}")
                             update_version(match)
 
-            # 4. Check HTML (Regex on raw body)
-            if 'html' in rules: # List of patterns
-                for pattern in rules['html']:
+            # 4. Check HTML
+            if 'html' in rule: 
+                for pattern in rule['html']:
                     match = re.search(pattern, site_data.html, re.IGNORECASE)
                     if match:
                         confidence += 40
@@ -69,8 +70,8 @@ class RulesEngine:
                         update_version(match)
 
             # 5. Check Script Src
-            if 'scriptSrc' in rules:
-                for pattern in rules['scriptSrc']:
+            if 'script_src' in rule:
+                for pattern in rule['script_src']:
                     for script_url in site_data.scripts:
                         match = re.search(pattern, script_url, re.IGNORECASE)
                         if match:
@@ -80,8 +81,8 @@ class RulesEngine:
                             break
 
             # 6. Check JS Global Variables / Content in Bundles
-            if 'js' in rules:
-                for pattern in rules['js']:
+            if 'js' in rule:
+                for pattern in rule['js']:
                     # Check in downloaded bundles
                     found_in_bundle = False
                     for bundle_content in site_data.js_bundles.values():
@@ -96,26 +97,22 @@ class RulesEngine:
                         break
 
             # 7. Check Favicon Hash
-            if 'icon_hash' in rules and site_data.favicon_hash:
-                # Can be a single string or list?
-                # fingerprints often use string for hash
-                if str(site_data.favicon_hash) == str(rules['icon_hash']):
+            if 'icon_hash' in rule and site_data.favicon_hash:
+                if str(site_data.favicon_hash) == str(rule['icon_hash']):
                     confidence += 100
                     evidence.append("Favicon Hash Match")
 
             # 8. Check Probes
-            if 'probe' in rules:
-                for path, keyword in rules['probe'].items():
+            if 'probe' in rule:
+                for path, keyword in rule['probe'].items():
                     content = site_data.probe_content.get(path, "")
                     if content and keyword in content:
                         confidence += 100
                         evidence.append(f"Probe {path} confirmed")
 
             if confidence > 0:
-                # Cap at 100
                 confidence = min(confidence, 100)
-                cat_id = str(rules.get('cats', [0])[0])
-                cat_name = self.categories.get(cat_id, "Unknown")
+                cat_name = rule.get('category', "Unknown")
                 
                 results.append(DetectionResult(
                     technology=tech_name,
@@ -135,23 +132,22 @@ class RulesEngine:
         existing_techs = {r.technology for r in results}
         new_results = []
         
+        # Create a lookup for rules by name
+        rules_by_name = {r['name']: r for r in self.technologies}
+        
         for res in results:
-            tech_rules = self.technologies.get(res.technology, {})
-            if 'implies' in tech_rules:
-                for implied in tech_rules['implies']:
+            tech_rule = rules_by_name.get(res.technology)
+            if tech_rule and 'imply' in tech_rule: # Changed from implies to imply based on JSON
+                for implied in tech_rule['imply']:
                     if implied not in existing_techs:
-                        # Add implied tech with slightly lower confidence
-                        # We need to find the category for implied tech
-                        implied_rules = self.technologies.get(implied, {})
-                        cat_id = str(implied_rules.get('cats', [0])[0])
-                        cat_name = self.categories.get(cat_id, "Unknown")
-                        
-                        new_results.append(DetectionResult(
-                            technology=implied,
-                            category=cat_name,
-                            confidence=res.confidence - 10,
-                            evidence=f"Implied by {res.technology}"
-                        ))
-                        existing_techs.add(implied)
+                        implied_rule = rules_by_name.get(implied)
+                        if implied_rule:
+                            new_results.append(DetectionResult(
+                                technology=implied,
+                                category=implied_rule.get('category', 'Unknown'),
+                                confidence=max(res.confidence - 10, 50),
+                                evidence=f"Implied by {res.technology}"
+                            ))
+                            existing_techs.add(implied)
         
         results.extend(new_results)

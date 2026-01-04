@@ -12,19 +12,20 @@ import warnings
 warnings.filterwarnings("ignore")
 
 class Fetcher:
-    def __init__(self, timeout=10, max_assets=20):
+    def __init__(self, timeout=10, max_assets=20, proxy=None):
         self.timeout = timeout
         self.max_assets = max_assets
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         }
+        self.proxies = {"http": proxy, "https": proxy} if proxy else None
 
     def fetch(self, url: str) -> SiteData:
         try:
             if not url.startswith('http'):
                 url = 'https://' + url
                 
-            response = requests.get(url, headers=self.headers, timeout=self.timeout, verify=False)
+            response = requests.get(url, headers=self.headers, timeout=self.timeout, verify=False, proxies=self.proxies)
             
             soup = BeautifulSoup(response.text, 'html.parser')
             
@@ -96,7 +97,7 @@ class Fetcher:
 
     def _fetch_content(self, url: str) -> str:
         try:
-            r = requests.get(url, headers=self.headers, timeout=5, verify=False)
+            r = requests.get(url, headers=self.headers, timeout=5, verify=False, proxies=self.proxies)
             if r.status_code == 200:
                 return r.text
         except:
@@ -112,7 +113,7 @@ class Fetcher:
             favicon_url = urljoin(data.final_url, '/favicon.ico')
             
         try:
-            r = requests.get(favicon_url, headers=self.headers, timeout=5, verify=False)
+            r = requests.get(favicon_url, headers=self.headers, timeout=5, verify=False, proxies=self.proxies)
             if r.status_code == 200:
                 favicon = codecs.encode(r.content, "base64")
                 data.favicon_hash = mmh3.hash(favicon)

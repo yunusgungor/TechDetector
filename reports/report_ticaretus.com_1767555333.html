@@ -1,0 +1,652 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>TechIntel: https://ticaretus.com/</title>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+            <style>
+                body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background: #f3f4f6; color: #1f2937; }
+                .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+                
+                /* Header */
+                .header { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+                .title h1 { margin: 0; font-size: 28px; color: #111827; }
+                .title p { margin: 5px 0 0; color: #6b7280; }
+                .grade-badge { background: #ef4444; color: white; padding: 10px 20px; border-radius: 12px; font-size: 32px; font-weight: 800; text-align: center; min-width: 60px; }
+                .grade-label { font-size: 12px; opacity: 0.9; font-weight: 500; display: block; }
+
+                /* Grid */
+                .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+                
+                /* Cards */
+                .card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 30px; }
+                .card h2 { margin-top: 0; font-size: 18px; border-bottom: 1px solid #e5e7eb; padding-bottom: 15px; margin-bottom: 20px; color: #374151; }
+                
+                /* List */
+                .tech-item { display: flex; justify-content: space-between; align-items: start; padding: 15px 0; border-bottom: 1px solid #f3f4f6; }
+                .tech-item:last-child { border-bottom: none; }
+                .tech-left { display: flex; gap: 15px; }
+                .tech-icon { width: 40px; height: 40px; background: #eff6ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #3b82f6; }
+                .tech-info h3 { margin: 0; font-size: 16px; font-weight: 600; }
+                .tech-info span { font-size: 12px; color: #6b7280; background: #f3f4f6; padding: 2px 8px; border-radius: 4px; }
+                .tech-evidence { font-size: 12px; color: #9ca3af; margin-top: 4px; font-family: monospace; max-width: 500px; word-break: break-all; }
+                .tech-conf { font-weight: 700; color: #059669; font-size: 14px; }
+                
+                .cve-link { display: inline-block; margin-left: 10px; font-size: 12px; color: #ef4444; text-decoration: none; border: 1px solid #fca5a5; padding: 2px 6px; border-radius: 4px; }
+                .cve-link:hover { background: #fef2f2; }
+
+                /* Stats Row */
+                .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+                .stat-card { background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s; }
+                .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+                .stat-val { font-size: 24px; font-weight: 700; color: #111827; display: block; }
+                .stat-key { font-size: 13px; color: #6b7280; text-transform: uppercase; font-weight: 600; }
+
+                /* Modal */
+                .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
+                .modal.active { display: flex; }
+                .modal-content { background: white; width: 600px; max-height: 80vh; border-radius: 16px; padding: 24px; position: relative; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); animation: modalPop 0.2s ease-out; }
+                @keyframes modalPop { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+                .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e5e7eb; padding-bottom: 15px; }
+                .modal-title { font-size: 20px; font-weight: 700; color: #111827; margin: 0; }
+                .close-btn { background: none; border: none; font-size: 24px; color: #9ca3af; cursor: pointer; transition: color 0.2s; }
+                .close-btn:hover { color: #111827; }
+                .modal-body { overflow-y: auto; padding-right: 5px; }
+                .list-group { list-style: none; padding: 0; margin: 0; }
+                .list-item { padding: 12px 16px; border-bottom: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center; }
+                .list-item:hover { background: #f9fafb; }
+                .list-item:last-child { border-bottom: none; }
+                .item-main { font-weight: 500; font-size: 14px; color: #374151; }
+                .item-sub { font-size: 12px; color: #6b7280; display: block; }
+                .badge { padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; background: #e0f2fe; color: #0369a1; }
+
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <div class="title">
+                        <h1>Cyber Intelligence Report</h1>
+                        <p>https://ticaretus.com/ | 2026-01-04 22:35</p>
+                    </div>
+                    <div class="grade-badge">
+                        F
+                        <span class="grade-label">SECURITY</span>
+                    </div>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-card" onclick="openModal('techModal')">
+                        <span class="stat-val">19</span>
+                        <span class="stat-key">Techs Detected</span>
+                    </div>
+                    <div class="stat-card" onclick="openModal('pageModal')">
+                        <span class="stat-val">16</span>
+                        <span class="stat-key">Pages Crawled</span>
+                    </div>
+                    <div class="stat-card" onclick="openModal('catModal')">
+                        <span class="stat-val">12</span>
+                        <span class="stat-key">Categories</span>
+                    </div>
+                    <div class="stat-card" onclick="alert('Scan completed successfully.')">
+                        <span class="stat-val">Active</span>
+                        <span class="stat-key">Scan Mode</span>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <div>
+                        <div class="card">
+                            <h2>Detailed Findings</h2>
+                            <div class="tech-list">
+        
+                                <div class="tech-item">
+                                    <div class="tech-left">
+                                        <div class="tech-icon">I</div>
+                                        <div class="tech-info">
+                                            <h3>IP: 31.43.160.6 </h3>
+                                            <span>Infrastructure</span>
+                                            <div class="tech-evidence">DNS Resolution for ticaretus.com</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-conf">100%</div>
+                                </div>
+            
+                                <div class="tech-item">
+                                    <div class="tech-left">
+                                        <div class="tech-icon">L</div>
+                                        <div class="tech-info">
+                                            <h3>Location: Amsterdam, The Netherlands </h3>
+                                            <span>Geo-Location</span>
+                                            <div class="tech-evidence">GeoIP Lookup</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-conf">100%</div>
+                                </div>
+            
+                                <div class="tech-item">
+                                    <div class="tech-left">
+                                        <div class="tech-icon">I</div>
+                                        <div class="tech-info">
+                                            <h3>ISP: Framer B.V </h3>
+                                            <span>Infrastructure</span>
+                                            <div class="tech-evidence">Organization: Framer B.V</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-conf">100%</div>
+                                </div>
+            
+                                <div class="tech-item">
+                                    <div class="tech-left">
+                                        <div class="tech-icon">G</div>
+                                        <div class="tech-info">
+                                            <h3>Google Workspace vMX: smtp.google.com. <a href='https://www.google.com/search?q=Google Workspace MX: smtp.google.com. vulnerabilities' target='_blank' class='cve-link'>Check CVEs</a></h3>
+                                            <span>Email</span>
+                                            <div class="tech-evidence"></div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-conf">100%</div>
+                                </div>
+            
+                                <div class="tech-item">
+                                    <div class="tech-left">
+                                        <div class="tech-icon">F</div>
+                                        <div class="tech-info">
+                                            <h3>Found 2 Subdomains </h3>
+                                            <span>Reconnaissance</span>
+                                            <div class="tech-evidence">www.ticaretus.com, shop.ticaretus.com</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-conf">100%</div>
+                                </div>
+            
+                                <div class="tech-item">
+                                    <div class="tech-left">
+                                        <div class="tech-icon">O</div>
+                                        <div class="tech-info">
+                                            <h3>Open Ports: 5432/PostgreSQL, 3306/MySQL, 8443/HTTPS-Alt, 53/DNS, 8080/HTTP-Alt </h3>
+                                            <span>Infrastructure</span>
+                                            <div class="tech-evidence">Active TCP Connect Scan</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-conf">100%</div>
+                                </div>
+            
+                                <div class="tech-item">
+                                    <div class="tech-left">
+                                        <div class="tech-icon">S</div>
+                                        <div class="tech-info">
+                                            <h3>Server Leaks (Error Page) </h3>
+                                            <span>Infrastructure</span>
+                                            <div class="tech-evidence">Server Header: Framer/091071e</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-conf">100%</div>
+                                </div>
+            
+                                <div class="tech-item">
+                                    <div class="tech-left">
+                                        <div class="tech-icon">F</div>
+                                        <div class="tech-info">
+                                            <h3>Framer </h3>
+                                            <span>CMS</span>
+                                            <div class="tech-evidence">Header: server, Meta: generator</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-conf">100%</div>
+                                </div>
+            
+                                <div class="tech-item">
+                                    <div class="tech-left">
+                                        <div class="tech-icon">S</div>
+                                        <div class="tech-info">
+                                            <h3>Security Grade: F </h3>
+                                            <span>Security Audit</span>
+                                            <div class="tech-evidence">Score: 40/100. Missing 4 critical headers.</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-conf">100%</div>
+                                </div>
+            
+                                <div class="tech-item">
+                                    <div class="tech-left">
+                                        <div class="tech-icon">G</div>
+                                        <div class="tech-info">
+                                            <h3>Google Analytics </h3>
+                                            <span>Analytics</span>
+                                            <div class="tech-evidence">HTML Pattern: G-..., Script: googletagmanager.com/gtag/js</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-conf">90%</div>
+                                </div>
+            
+                                <div class="tech-item">
+                                    <div class="tech-left">
+                                        <div class="tech-icon">S</div>
+                                        <div class="tech-info">
+                                            <h3>Shopify </h3>
+                                            <span>Ecommerce</span>
+                                            <div class="tech-evidence">JS Bundle Pattern: Shopify</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-conf">80%</div>
+                                </div>
+            
+                                <div class="tech-item">
+                                    <div class="tech-left">
+                                        <div class="tech-icon">J</div>
+                                        <div class="tech-info">
+                                            <h3>jQuery </h3>
+                                            <span>JavaScript Libraries</span>
+                                            <div class="tech-evidence">JS Bundle Pattern: jQuery</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-conf">80%</div>
+                                </div>
+            
+                                <div class="tech-item">
+                                    <div class="tech-left">
+                                        <div class="tech-icon">L</div>
+                                        <div class="tech-info">
+                                            <h3>Lodash </h3>
+                                            <span>JavaScript Libraries</span>
+                                            <div class="tech-evidence">JS Bundle Pattern: _</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-conf">80%</div>
+                                </div>
+            
+                                <div class="tech-item">
+                                    <div class="tech-left">
+                                        <div class="tech-icon">H</div>
+                                        <div class="tech-info">
+                                            <h3>Hotjar </h3>
+                                            <span>Analytics</span>
+                                            <div class="tech-evidence">JS Bundle Pattern: hj</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-conf">80%</div>
+                                </div>
+            
+                                <div class="tech-item">
+                                    <div class="tech-left">
+                                        <div class="tech-icon">S</div>
+                                        <div class="tech-info">
+                                            <h3>Segment </h3>
+                                            <span>Analytics</span>
+                                            <div class="tech-evidence">JS Bundle Pattern: analytics</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-conf">80%</div>
+                                </div>
+            
+                                <div class="tech-item">
+                                    <div class="tech-left">
+                                        <div class="tech-icon">B</div>
+                                        <div class="tech-info">
+                                            <h3>Bootstrap </h3>
+                                            <span>UI Frameworks</span>
+                                            <div class="tech-evidence">JS Bundle Pattern: bootstrap</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-conf">80%</div>
+                                </div>
+            
+                                <div class="tech-item">
+                                    <div class="tech-left">
+                                        <div class="tech-icon">N</div>
+                                        <div class="tech-info">
+                                            <h3>Nginx </h3>
+                                            <span>Web Servers</span>
+                                            <div class="tech-evidence">Implied by Shopify</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-conf">70%</div>
+                                </div>
+            
+                                <div class="tech-item">
+                                    <div class="tech-left">
+                                        <div class="tech-icon">F</div>
+                                        <div class="tech-info">
+                                            <h3>Facebook Pixel </h3>
+                                            <span>Analytics</span>
+                                            <div class="tech-evidence">HTML Pattern: fbq\('init'...</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-conf">40%</div>
+                                </div>
+            
+                                <div class="tech-item">
+                                    <div class="tech-left">
+                                        <div class="tech-icon">G</div>
+                                        <div class="tech-info">
+                                            <h3>General / Unknown </h3>
+                                            <span>Context Analysis</span>
+                                            <div class="tech-evidence">Keyword Score: 0</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-conf">0%</div>
+                                </div>
+            
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="card">
+                            <h2>Technology Distribution</h2>
+                            <canvas id="catChart"></canvas>
+                        </div>
+                        <div class="card">
+                             <h2>Scanned Coverage</h2>
+                             <div style="max-height: 300px; overflow-y: auto;">
+                                 <div style='padding:5px 0; border-bottom:1px solid #eee; font-size:12px; color:#666;'>https://ticaretus.com/</div><div style='padding:5px 0; border-bottom:1px solid #eee; font-size:12px; color:#666;'>https://ticaretus.com/legal/i%CC%87leti%C5%9Fim-verisi-i%CC%87%C5%9Fleme-onay%C4%B1</div><div style='padding:5px 0; border-bottom:1px solid #eee; font-size:12px; color:#666;'>https://ticaretus.com/basari-hikayelerimiz</div><div style='padding:5px 0; border-bottom:1px solid #eee; font-size:12px; color:#666;'>https://ticaretus.com/legal/%C3%A7erez-politikas%C4%B1</div><div style='padding:5px 0; border-bottom:1px solid #eee; font-size:12px; color:#666;'>https://ticaretus.com/legal/kullanici-s%C3%B6zlesmesi</div><div style='padding:5px 0; border-bottom:1px solid #eee; font-size:12px; color:#666;'>https://ticaretus.com/kariyer</div><div style='padding:5px 0; border-bottom:1px solid #eee; font-size:12px; color:#666;'>https://ticaretus.com/referanslar</div><div style='padding:5px 0; border-bottom:1px solid #eee; font-size:12px; color:#666;'>https://ticaretus.com/legal/gizlilik-politikas%C4%B1</div><div style='padding:5px 0; border-bottom:1px solid #eee; font-size:12px; color:#666;'>https://ticaretus.com/legal/kvkk</div><div style='padding:5px 0; border-bottom:1px solid #eee; font-size:12px; color:#666;'>https://ticaretus.com/</div><div style='padding:5px 0; border-bottom:1px solid #eee; font-size:12px; color:#666;'>https://ticaretus.com/legal/mesafeli-satis-sozlesmesi</div><div style='padding:5px 0; border-bottom:1px solid #eee; font-size:12px; color:#666;'>https://ticaretus.com/iletisim</div><div style='padding:5px 0; border-bottom:1px solid #eee; font-size:12px; color:#666;'>https://ticaretus.com/hakkimizda</div><div style='padding:5px 0; border-bottom:1px solid #eee; font-size:12px; color:#666;'>https://ticaretus.com/hizmetlerimiz/trendyol</div><div style='padding:5px 0; border-bottom:1px solid #eee; font-size:12px; color:#666;'>https://ticaretus.com/hizmetlerimiz</div><div style='padding:5px 0; border-bottom:1px solid #eee; font-size:12px; color:#666;'>https://ticaretus.com/gelistirmelerimiz</div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODALS -->
+            <div id="techModal" class="modal" onclick="if(event.target === this) closeModal('techModal')">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Detected Technologies</h3>
+                        <button class="close-btn" onclick="closeModal('techModal')">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="list-group">
+                            
+            <li class="list-item">
+                <div>
+                    <span class="item-main">IP: 31.43.160.6</span>
+                    <span class="item-sub">Infrastructure</span>
+                </div>
+                <span class="badge" style="background:#dcfce7; color:#166534;">100%</span>
+            </li>
+            
+            <li class="list-item">
+                <div>
+                    <span class="item-main">Location: Amsterdam, The Netherlands</span>
+                    <span class="item-sub">Geo-Location</span>
+                </div>
+                <span class="badge" style="background:#dcfce7; color:#166534;">100%</span>
+            </li>
+            
+            <li class="list-item">
+                <div>
+                    <span class="item-main">ISP: Framer B.V</span>
+                    <span class="item-sub">Infrastructure</span>
+                </div>
+                <span class="badge" style="background:#dcfce7; color:#166534;">100%</span>
+            </li>
+            
+            <li class="list-item">
+                <div>
+                    <span class="item-main">Google Workspace vMX: smtp.google.com.</span>
+                    <span class="item-sub">Email</span>
+                </div>
+                <span class="badge" style="background:#dcfce7; color:#166534;">100%</span>
+            </li>
+            
+            <li class="list-item">
+                <div>
+                    <span class="item-main">Found 2 Subdomains</span>
+                    <span class="item-sub">Reconnaissance</span>
+                </div>
+                <span class="badge" style="background:#dcfce7; color:#166534;">100%</span>
+            </li>
+            
+            <li class="list-item">
+                <div>
+                    <span class="item-main">Open Ports: 5432/PostgreSQL, 3306/MySQL, 8443/HTTPS-Alt, 53/DNS, 8080/HTTP-Alt</span>
+                    <span class="item-sub">Infrastructure</span>
+                </div>
+                <span class="badge" style="background:#dcfce7; color:#166534;">100%</span>
+            </li>
+            
+            <li class="list-item">
+                <div>
+                    <span class="item-main">Server Leaks (Error Page)</span>
+                    <span class="item-sub">Infrastructure</span>
+                </div>
+                <span class="badge" style="background:#dcfce7; color:#166534;">100%</span>
+            </li>
+            
+            <li class="list-item">
+                <div>
+                    <span class="item-main">Framer</span>
+                    <span class="item-sub">CMS</span>
+                </div>
+                <span class="badge" style="background:#dcfce7; color:#166534;">100%</span>
+            </li>
+            
+            <li class="list-item">
+                <div>
+                    <span class="item-main">Security Grade: F</span>
+                    <span class="item-sub">Security Audit</span>
+                </div>
+                <span class="badge" style="background:#dcfce7; color:#166534;">100%</span>
+            </li>
+            
+            <li class="list-item">
+                <div>
+                    <span class="item-main">Google Analytics</span>
+                    <span class="item-sub">Analytics</span>
+                </div>
+                <span class="badge" style="background:#dcfce7; color:#166534;">90%</span>
+            </li>
+            
+            <li class="list-item">
+                <div>
+                    <span class="item-main">Shopify</span>
+                    <span class="item-sub">Ecommerce</span>
+                </div>
+                <span class="badge" style="background:#dcfce7; color:#166534;">80%</span>
+            </li>
+            
+            <li class="list-item">
+                <div>
+                    <span class="item-main">jQuery</span>
+                    <span class="item-sub">JavaScript Libraries</span>
+                </div>
+                <span class="badge" style="background:#dcfce7; color:#166534;">80%</span>
+            </li>
+            
+            <li class="list-item">
+                <div>
+                    <span class="item-main">Lodash</span>
+                    <span class="item-sub">JavaScript Libraries</span>
+                </div>
+                <span class="badge" style="background:#dcfce7; color:#166534;">80%</span>
+            </li>
+            
+            <li class="list-item">
+                <div>
+                    <span class="item-main">Hotjar</span>
+                    <span class="item-sub">Analytics</span>
+                </div>
+                <span class="badge" style="background:#dcfce7; color:#166534;">80%</span>
+            </li>
+            
+            <li class="list-item">
+                <div>
+                    <span class="item-main">Segment</span>
+                    <span class="item-sub">Analytics</span>
+                </div>
+                <span class="badge" style="background:#dcfce7; color:#166534;">80%</span>
+            </li>
+            
+            <li class="list-item">
+                <div>
+                    <span class="item-main">Bootstrap</span>
+                    <span class="item-sub">UI Frameworks</span>
+                </div>
+                <span class="badge" style="background:#dcfce7; color:#166534;">80%</span>
+            </li>
+            
+            <li class="list-item">
+                <div>
+                    <span class="item-main">Nginx</span>
+                    <span class="item-sub">Web Servers</span>
+                </div>
+                <span class="badge" style="background:#dcfce7; color:#166534;">70%</span>
+            </li>
+            
+            <li class="list-item">
+                <div>
+                    <span class="item-main">Facebook Pixel</span>
+                    <span class="item-sub">Analytics</span>
+                </div>
+                <span class="badge" style="background:#dcfce7; color:#166534;">40%</span>
+            </li>
+            
+            <li class="list-item">
+                <div>
+                    <span class="item-main">General / Unknown</span>
+                    <span class="item-sub">Context Analysis</span>
+                </div>
+                <span class="badge" style="background:#dcfce7; color:#166534;">0%</span>
+            </li>
+            
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="pageModal" class="modal" onclick="if(event.target === this) closeModal('pageModal')">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Scanned Pages</h3>
+                        <button class="close-btn" onclick="closeModal('pageModal')">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="list-group">
+                            <li class="list-item"><a href="https://ticaretus.com/" target="_blank" class="item-main" style="text-decoration:none; color:#2563eb; overflow-wrap:anywhere;">https://ticaretus.com/</a></li><li class="list-item"><a href="https://ticaretus.com/legal/i%CC%87leti%C5%9Fim-verisi-i%CC%87%C5%9Fleme-onay%C4%B1" target="_blank" class="item-main" style="text-decoration:none; color:#2563eb; overflow-wrap:anywhere;">https://ticaretus.com/legal/i%CC%87leti%C5%9Fim-verisi-i%CC%87%C5%9Fleme-onay%C4%B1</a></li><li class="list-item"><a href="https://ticaretus.com/basari-hikayelerimiz" target="_blank" class="item-main" style="text-decoration:none; color:#2563eb; overflow-wrap:anywhere;">https://ticaretus.com/basari-hikayelerimiz</a></li><li class="list-item"><a href="https://ticaretus.com/legal/%C3%A7erez-politikas%C4%B1" target="_blank" class="item-main" style="text-decoration:none; color:#2563eb; overflow-wrap:anywhere;">https://ticaretus.com/legal/%C3%A7erez-politikas%C4%B1</a></li><li class="list-item"><a href="https://ticaretus.com/legal/kullanici-s%C3%B6zlesmesi" target="_blank" class="item-main" style="text-decoration:none; color:#2563eb; overflow-wrap:anywhere;">https://ticaretus.com/legal/kullanici-s%C3%B6zlesmesi</a></li><li class="list-item"><a href="https://ticaretus.com/kariyer" target="_blank" class="item-main" style="text-decoration:none; color:#2563eb; overflow-wrap:anywhere;">https://ticaretus.com/kariyer</a></li><li class="list-item"><a href="https://ticaretus.com/referanslar" target="_blank" class="item-main" style="text-decoration:none; color:#2563eb; overflow-wrap:anywhere;">https://ticaretus.com/referanslar</a></li><li class="list-item"><a href="https://ticaretus.com/legal/gizlilik-politikas%C4%B1" target="_blank" class="item-main" style="text-decoration:none; color:#2563eb; overflow-wrap:anywhere;">https://ticaretus.com/legal/gizlilik-politikas%C4%B1</a></li><li class="list-item"><a href="https://ticaretus.com/legal/kvkk" target="_blank" class="item-main" style="text-decoration:none; color:#2563eb; overflow-wrap:anywhere;">https://ticaretus.com/legal/kvkk</a></li><li class="list-item"><a href="https://ticaretus.com/" target="_blank" class="item-main" style="text-decoration:none; color:#2563eb; overflow-wrap:anywhere;">https://ticaretus.com/</a></li><li class="list-item"><a href="https://ticaretus.com/legal/mesafeli-satis-sozlesmesi" target="_blank" class="item-main" style="text-decoration:none; color:#2563eb; overflow-wrap:anywhere;">https://ticaretus.com/legal/mesafeli-satis-sozlesmesi</a></li><li class="list-item"><a href="https://ticaretus.com/iletisim" target="_blank" class="item-main" style="text-decoration:none; color:#2563eb; overflow-wrap:anywhere;">https://ticaretus.com/iletisim</a></li><li class="list-item"><a href="https://ticaretus.com/hakkimizda" target="_blank" class="item-main" style="text-decoration:none; color:#2563eb; overflow-wrap:anywhere;">https://ticaretus.com/hakkimizda</a></li><li class="list-item"><a href="https://ticaretus.com/hizmetlerimiz/trendyol" target="_blank" class="item-main" style="text-decoration:none; color:#2563eb; overflow-wrap:anywhere;">https://ticaretus.com/hizmetlerimiz/trendyol</a></li><li class="list-item"><a href="https://ticaretus.com/hizmetlerimiz" target="_blank" class="item-main" style="text-decoration:none; color:#2563eb; overflow-wrap:anywhere;">https://ticaretus.com/hizmetlerimiz</a></li><li class="list-item"><a href="https://ticaretus.com/gelistirmelerimiz" target="_blank" class="item-main" style="text-decoration:none; color:#2563eb; overflow-wrap:anywhere;">https://ticaretus.com/gelistirmelerimiz</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="catModal" class="modal" onclick="if(event.target === this) closeModal('catModal')">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Categories</h3>
+                        <button class="close-btn" onclick="closeModal('catModal')">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="list-group">
+                            
+            <li class="list-item">
+                <span class="item-main">Infrastructure</span>
+                <span class="badge">4</span>
+            </li>
+            
+            <li class="list-item">
+                <span class="item-main">Geo-Location</span>
+                <span class="badge">1</span>
+            </li>
+            
+            <li class="list-item">
+                <span class="item-main">Email</span>
+                <span class="badge">1</span>
+            </li>
+            
+            <li class="list-item">
+                <span class="item-main">Reconnaissance</span>
+                <span class="badge">1</span>
+            </li>
+            
+            <li class="list-item">
+                <span class="item-main">CMS</span>
+                <span class="badge">1</span>
+            </li>
+            
+            <li class="list-item">
+                <span class="item-main">Security Audit</span>
+                <span class="badge">1</span>
+            </li>
+            
+            <li class="list-item">
+                <span class="item-main">Analytics</span>
+                <span class="badge">4</span>
+            </li>
+            
+            <li class="list-item">
+                <span class="item-main">Ecommerce</span>
+                <span class="badge">1</span>
+            </li>
+            
+            <li class="list-item">
+                <span class="item-main">JavaScript Libraries</span>
+                <span class="badge">2</span>
+            </li>
+            
+            <li class="list-item">
+                <span class="item-main">UI Frameworks</span>
+                <span class="badge">1</span>
+            </li>
+            
+            <li class="list-item">
+                <span class="item-main">Web Servers</span>
+                <span class="badge">1</span>
+            </li>
+            
+            <li class="list-item">
+                <span class="item-main">Context Analysis</span>
+                <span class="badge">1</span>
+            </li>
+            
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                function openModal(id) {
+                    document.getElementById(id).classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+                
+                function closeModal(id) {
+                    document.getElementById(id).classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+
+                document.addEventListener('keydown', function(event) {
+                    if (event.key === "Escape") {
+                        document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+                        document.body.style.overflow = '';
+                    }
+                });
+
+                const ctx = document.getElementById('catChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ["Infrastructure", "Geo-Location", "Email", "Reconnaissance", "CMS", "Security Audit", "Analytics", "Ecommerce", "JavaScript Libraries", "UI Frameworks", "Web Servers", "Context Analysis"],
+                        datasets: [{
+                            data: [4, 1, 1, 1, 1, 1, 4, 1, 2, 1, 1, 1],
+                            backgroundColor: [
+                                '#3b82f6', '#10b981', '#f59e0b', '#ef4444', 
+                                '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    font: { family: 'Inter', size: 11 }
+                                }
+                            }
+                        }
+                    }
+                });
+            </script>
+        </body>
+        </html>
+        

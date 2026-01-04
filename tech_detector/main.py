@@ -14,10 +14,11 @@ def main():
     parser.add_argument("--csv", action="store_true", help="Generate CSV Report")
     parser.add_argument("--passive", action="store_true", help="Passive Mode (Skip active port/error scans)")
     parser.add_argument("--threads", type=int, default=5, help="Number of crawl threads (default: 5)")
+    parser.add_argument("--proxy", help="Proxy URL (e.g. http://127.0.0.1:8080)")
     
     args = parser.parse_args()
     
-    scanner = Scanner()
+    scanner = Scanner(proxy=args.proxy)
     results, data, report_path, csv_path = scanner.scan(
         args.url, 
         deep_scan=args.deep, 
