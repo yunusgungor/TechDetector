@@ -53,7 +53,8 @@
                 "Shopify": ""
             },
             "imply": [
-                "Nginx"
+                "Nginx",
+                "Cloudflare"
             ]
         },
         {
@@ -269,13 +270,34 @@
             }
         },
         {
-            "name": "Python",
-            "category": "Programming Languages",
+            "name": "Werkzeug",
+            "category": "Web Servers",
             "headers": {
-                "server": "Werkzeug",
-                "server": "Gunicorn",
+                "server": "Werkzeug"
+            },
+            "imply": [
+                "Python"
+            ]
+        },
+        {
+            "name": "Gunicorn",
+            "category": "Web Servers",
+            "headers": {
+                "server": "Gunicorn"
+            },
+            "imply": [
+                "Python"
+            ]
+        },
+        {
+            "name": "Twisted",
+            "category": "Web Servers",
+            "headers": {
                 "server": "Twisted"
-            }
+            },
+            "imply": [
+                "Python"
+            ]
         },
         {
             "name": "Ruby on Rails",

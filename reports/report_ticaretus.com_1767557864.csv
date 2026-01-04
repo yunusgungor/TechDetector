@@ -1,0 +1,36 @@
+Technology,Category,Confidence,Version,Evidence
+IP: 31.43.160.6,Infrastructure,100%,,DNS Resolution for ticaretus.com
+"Location: Amsterdam, The Netherlands",Geo-Location,100%,,GeoIP Lookup
+ISP: Framer B.V,Infrastructure,100%,,Organization: Framer B.V
+"Registrar: HOSTINGER operations, UAB",Domain Intelligence,100%,,RDAP Query
+Registered: 2022-11-21,Domain Intelligence,100%,,RDAP Registration Date
+Expires: 2027-11-21,Domain Intelligence,100%,,RDAP Expiration Date
+Google Workspace,Email,100%,MX: smtp.google.com.,
+Found 5 Subdomains,Reconnaissance,100%,,"melontik.ticaretus.com,panel.ticaretus.com,shop.ticaretus.com,ticaretus.com,www.ticaretus.com"
+"Open Ports: 9200/Elasticsearch, 53/DNS, 21/FTP, 8443/HTTPS-Alt",Infrastructure,100%,,Active TCP Connect Scan
+Server Leaks (Error Page),Infrastructure,100%,,Server Header: Framer/091071e
+Framer,CMS,100%,,"Header: server, Meta: generator"
+Security Grade: F,Security Audit,100%,,Score: 40/100. Missing 4 critical headers.
+Leaked Secret,Security Risk,100%,,Found Heroku API Key in HTML: 5dab...819e
+Leaked Secret,Security Risk,100%,,Found Heroku API Key in HTML: 1e17...7935
+Leaked Secret,Security Risk,100%,,Found Heroku API Key in HTML: 82c6...d4bd
+Leaked Secret,Security Risk,100%,,Found Heroku API Key in JS File (script_main.DXR4wYwV.mjs): 8174...6d10
+Leaked Secret,Security Risk,100%,,Found Heroku API Key in JS File (script_main.DXR4wYwV.mjs): 441e...caef
+Leaked Secret,Security Risk,100%,,Found Heroku API Key in JS File (script_main.DXR4wYwV.mjs): 4e3d...3177
+Leaked Secret,Security Risk,100%,,Found Heroku API Key in JS File (js?id=G-402597160): fab2...5226
+Leaked Secret,Security Risk,100%,,Found Heroku API Key in JS File (js?id=G-402597160): bbbc...ee1b
+Leaked Secret,Security Risk,100%,,Found Heroku API Key in JS File (js?id=G-402597160): a647...5e8e
+Found 1 Emails,OSINT,100%,,bilgi@ticaretus.com
+Instagram Profile,OSINT,100%,,ticaretus
+YouTube Profile,OSINT,100%,,Ticaretus
+Google Analytics,Analytics,90%,,"HTML Pattern: G-..., Script: googletagmanager.com/gtag/js"
+Shopify,Ecommerce,80%,,JS Bundle Pattern: Shopify
+jQuery,JavaScript Libraries,80%,,JS Bundle Pattern: jQuery
+Lodash,JavaScript Libraries,80%,,JS Bundle Pattern: _
+Hotjar,Analytics,80%,,JS Bundle Pattern: hj
+Segment,Analytics,80%,,JS Bundle Pattern: analytics
+Bootstrap,UI Frameworks,80%,,JS Bundle Pattern: bootstrap
+Nginx,Web Servers,70%,,Implied by Shopify
+Cloudflare,CDN,70%,,Implied by Shopify
+Corporate,Context Analysis,50%,,Keyword Score: 4
+Facebook Pixel,Analytics,40%,,HTML Pattern: fbq\('init'...
