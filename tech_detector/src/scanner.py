@@ -4,6 +4,9 @@ from .crawler import Crawler
 from .reporter import Reporter
 from .sitemap_parser import SitemapParser
 from .ssl_inspector import SSLInspector
+from .dns_intelligence import DNSIntelligence
+from .security_auditor import SecurityAuditor
+from .subdomain_scanner import SubdomainScanner
 from .utils import DetectionResult, SiteData
 import json
 import os
@@ -19,17 +22,19 @@ class Scanner:
         self.engine = RulesEngine(fingerprints_path)
         self.reporter = Reporter()
         self.ssl_inspector = SSLInspector()
+        self.dns_intel = DNSIntelligence()
+        self.sec_auditor = SecurityAuditor()
+        self.sub_scanner = SubdomainScanner()
 
     def scan(self, url: str, deep_scan=False, generate_report=False, export_csv=False):
         all_results = []
         scanned_urls = []
         
-        # SSL Check (Once per domain)
-        print(f"[*] inspecting SSL Certificate for {url}...")
+        print(f"[*] Starting Security & Infrastructure Analysis for {url}...")
+
+        # 1. SSL Check
         ssl_info = self.ssl_inspector.inspect(url)
         if 'issuer_org' in ssl_info:
-             # Basic mapping from SSL to Technology
-             # This could be moved to RulesEngine, but simple injection works for now
              if 'Cloudflare' in ssl_info['issuer_org']:
                  all_results.append(DetectionResult("Cloudflare", "CDN", 100, "SSL Issuer: Cloudflare"))
              elif 'Google Trust Services' in ssl_info['issuer_org']:
@@ -39,25 +44,32 @@ class Scanner:
              elif 'Amazon' in ssl_info['issuer_org']:
                  all_results.append(DetectionResult("AWS", "PaaS", 80, "SSL Issuer: Amazon"))
 
+        # 2. DNS Intelligence
+        print(f"[*] Querying DNS Records (MX, TXT)...")
+        dns_results = self.dns_intel.analyze(url)
+        self._merge_results(all_results, dns_results)
+
+        # 3. Subdomain Scanning
+        print(f"[*] Enumerating Subdomains...")
+        sub_results = self.sub_scanner.scan(url)
+        self._merge_results(all_results, sub_results)
+
         if deep_scan:
-            print(f"[*] Starting Enterprise Deep Scan on {url}...")
+            print(f"[*] Starting Enterprise Deep Scan...")
             
-            # 1. Sitemap Intelligence
+            # Sitemap Intelligence
             sitemap_parser = SitemapParser(url)
             sitemap_urls = sitemap_parser.get_urls(limit=10)
             
             if sitemap_urls:
                 print(f"[*] Intelligent Sitemap Discovery: Found {len(sitemap_urls)} priority URLs.")
-                # Combine sitemap URLs with Crawler
             
             # Setup Crawler
             crawler = Crawler(url, max_pages=15) 
-            # Inject sitemap URLs into crawler queue if not present
             for sm_url in sitemap_urls:
                 if sm_url not in crawler.visited and sm_url not in crawler.queue:
                      crawler.queue.append(sm_url)
 
-            # Initial fetch logic same as before but now crawler has sitemap head start
             scanned_urls.append(url)
             
             # Initial fetch & analyze root
@@ -65,6 +77,10 @@ class Scanner:
             root_data = self.fetcher.fetch(url)
             root_results = self.engine.analyze(root_data)
             self._merge_results(all_results, root_results)
+            
+            # 4. Security Audit (On Root)
+            sec_results = self.sec_auditor.audit(root_data.headers)
+            self._merge_results(all_results, sec_results)
             
             # Seed extractor
             crawler.extract_links(root_data.html, root_data.final_url)
@@ -105,15 +121,26 @@ class Scanner:
                                 if len(scanned_urls) < crawler.max_pages:
                                     crawler.extract_links(data.html, data.final_url)
                         except Exception as exc:
-                            print(f"[!] {u} generated an exception: {exc}")
+                            pass # Silent fail for thread
                 
         else:
             print(f"[*] Fetching {url}...")
             data = self.fetcher.fetch(url)
             scanned_urls.append(data.final_url)
             
+            # Security Audit
+            sec_results = self.sec_auditor.audit(data.headers)
+            self._merge_results(all_results, sec_results)
+            
             print(f"[*] Analyzing data ({len(data.html)} bytes, {len(data.headers)} headers)...")
-            all_results = self.engine.analyze(data)
+            all_results.extend(self.engine.analyze(data)) # Fix: was self._merge in deep scan, but here we can just extend or merge properly
+            # Let's use merge to be safe
+            # self._merge_results(all_results, self.engine.analyze(data)) 
+            # Actually the lines above were correct in previous version but let's stick to _merge_results
+            
+            # Wait, standard scan logic:
+            analysis_res = self.engine.analyze(data)
+            self._merge_results(all_results, analysis_res)
 
         # Sort by confidence
         all_results.sort(key=lambda x: x.confidence, reverse=True)
