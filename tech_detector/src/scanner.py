@@ -13,6 +13,8 @@ from .error_fingerprinter import ErrorFingerprinter
 from .geoip_analyzer import GeoIPAnalyzer
 from .secret_scanner import SecretScanner
 from .api_discovery import APIDiscovery
+from .file_fuzzer import FileFuzzer
+from .rdap_client import RDAPClient
 from .utils import DetectionResult, SiteData
 import json
 import os
@@ -40,6 +42,8 @@ class Scanner:
         self.geoip = GeoIPAnalyzer()
         self.secret_scanner = SecretScanner()
         self.api_discovery = APIDiscovery()
+        self.file_fuzzer = FileFuzzer()
+        self.rdap_client = RDAPClient()
 
     def scan(self, url: str, deep_scan=False, passive_mode=False, threads=5, generate_report=False, export_csv=False):
         all_results = []
@@ -51,6 +55,11 @@ class Scanner:
         print(f"[*] performing GeoIP & Infrastructure Analysis...")
         geo_results = self.geoip.analyze(url)
         self._merge_results(all_results, geo_results)
+
+        # RDAP (Domain Info)
+        print(f"[*] Querying Domain Registry (RDAP)...")
+        rdap_results = self.rdap_client.analyze(url)
+        self._merge_results(all_results, rdap_results)
 
         # SSL Check
         ssl_info = self.ssl_inspector.inspect(url)
@@ -92,8 +101,12 @@ class Scanner:
             print(f"[*] Discovering API Endpoints...")
             api_results = self.api_discovery.scan(url)
             self._merge_results(all_results, api_results)
+            
+            print(f"[*] Fuzzing for Sensitive Files (.env, git, backups)...")
+            file_results = self.file_fuzzer.scan(url)
+            self._merge_results(all_results, file_results)
         else:
-            print("[*] Passive Mode: Skipping Port Scan, Subdomains, Error Provocation, API Discovery.")
+            print("[*] Passive Mode: Skipping Port Scan, Subdomains, Error Provocation, API, Fuzzing.")
 
         # --- Phase 3: Content Analysis (Crawling) ---
         if deep_scan:
@@ -175,6 +188,7 @@ class Scanner:
             data = self.fetcher.fetch(url)
             scanned_urls.append(data.final_url)
             
+            # Security Audit
             sec_results = self.sec_auditor.audit(data.headers)
             self._merge_results(all_results, sec_results)
             
