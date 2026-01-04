@@ -147,6 +147,38 @@
                 "React"
             ]
         },
+        "Framer": {
+            "cats": [
+                1,
+                66
+            ],
+            "website": "https://framer.com",
+            "headers": {
+                "Server": "Framer"
+            },
+            "meta": {
+                "generator": "Framer"
+            },
+            "html": [
+                "framerusercontent\\.com",
+                "<!-- Made in Framer"
+            ],
+            "implies": [
+                "React"
+            ]
+        },
+        "Facebook Pixel": {
+            "cats": [
+                10
+            ],
+            "website": "https://facebook.com/business/learn/facebook-pixel",
+            "scriptSrc": [
+                "connect\\.facebook\\.net/.*fbevents\\.js"
+            ],
+            "html": [
+                "fbq\\('init'"
+            ]
+        },
         "Cloudflare": {
             "cats": [
                 31
