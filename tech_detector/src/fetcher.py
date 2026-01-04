@@ -1,4 +1,6 @@
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 import mmh3
@@ -7,25 +9,58 @@ import concurrent.futures
 import dns.resolver
 from .utils import SiteData
 import warnings
+import random
 
 # Suppress SSL warnings
 warnings.filterwarnings("ignore")
 
 class Fetcher:
+    USER_AGENTS = [
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0',
+        'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/118.0',
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+        'Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+        'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0'
+    ]
+
     def __init__(self, timeout=10, max_assets=20, proxy=None):
         self.timeout = timeout
         self.max_assets = max_assets
-        self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        }
         self.proxies = {"http": proxy, "https": proxy} if proxy else None
+        
+        # Configure Session with Retries
+        self.session = requests.Session()
+        retry_strategy = Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504],
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount("http://", adapter)
+        self.session.mount("https://", adapter)
+        self.session.proxies = self.proxies
+
+    def _get_random_headers(self):
+        return {
+            'User-Agent': random.choice(self.USER_AGENTS),
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9,tr;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1'
+        }
 
     def fetch(self, url: str) -> SiteData:
         try:
             if not url.startswith('http'):
                 url = 'https://' + url
                 
-            response = requests.get(url, headers=self.headers, timeout=self.timeout, verify=False, proxies=self.proxies)
+            response = self.session.get(url, headers=self._get_random_headers(), timeout=self.timeout, verify=False)
             
             soup = BeautifulSoup(response.text, 'html.parser')
             
@@ -57,7 +92,7 @@ class Fetcher:
             return data
             
         except requests.RequestException as e:
-            print(f"Error fetching {url}: {e}")
+            # print(f"Error fetching {url}: {e}")
             return SiteData(url=url, final_url=url, status_code=0, headers={}, cookies={}, html="")
 
     def _parse_assets(self, data: SiteData, soup: BeautifulSoup):
@@ -97,7 +132,7 @@ class Fetcher:
 
     def _fetch_content(self, url: str) -> str:
         try:
-            r = requests.get(url, headers=self.headers, timeout=5, verify=False, proxies=self.proxies)
+            r = self.session.get(url, headers=self._get_random_headers(), timeout=5, verify=False)
             if r.status_code == 200:
                 return r.text
         except:
@@ -113,7 +148,7 @@ class Fetcher:
             favicon_url = urljoin(data.final_url, '/favicon.ico')
             
         try:
-            r = requests.get(favicon_url, headers=self.headers, timeout=5, verify=False, proxies=self.proxies)
+            r = self.session.get(favicon_url, headers=self._get_random_headers(), timeout=5, verify=False)
             if r.status_code == 200:
                 favicon = codecs.encode(r.content, "base64")
                 data.favicon_hash = mmh3.hash(favicon)

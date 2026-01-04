@@ -4,13 +4,13 @@ from collections import Counter
 
 class ContextAnalyzer:
     CATEGORIES = {
-        'E-Commerce': ['cart', 'shop', 'store', 'checkout', 'price', 'product', 'sale', 'buy', 'shipping', 'order'],
-        'News/Media': ['news', 'article', 'blog', 'read more', 'published', 'author', 'latest', 'breaking', 'editorial'],
-        'Corporate': ['about us', 'services', 'solutions', 'contact', 'team', 'careers', 'mission', 'vision', 'clients'],
-        'Educational': ['course', 'learn', 'student', 'university', 'academic', 'research', 'tutorial', 'lesson'],
-        'Medical': ['health', 'patient', 'doctor', 'treatment', 'medical', 'clinic', 'hospital', 'care'],
-        'Government': ['ministry', 'department', 'gov', 'citizen', 'public', 'law', 'regulation'],
-        'Technology': ['software', 'app', 'download', 'platform', 'developer', 'api', 'tech', 'saas']
+        'E-Commerce': ['cart', 'shop', 'store', 'checkout', 'price', 'product', 'sale', 'buy', 'shipping', 'order', 'sepet', 'magaza', 'satin al', 'odeme', 'fiyat', 'urun', 'alisveris'],
+        'News/Media': ['news', 'article', 'blog', 'read more', 'published', 'author', 'latest', 'breaking', 'editorial', 'haber', 'yazar', 'gundem', 'son dakika', 'makale'],
+        'Corporate': ['about us', 'services', 'solutions', 'contact', 'team', 'careers', 'mission', 'vision', 'clients', 'hakkimizda', 'iletisim', 'hizmetler', 'cozumler', 'ekip', 'kariyer'],
+        'Educational': ['course', 'learn', 'student', 'university', 'academic', 'research', 'tutorial', 'lesson', 'egitim', 'ogrenci', 'ders', 'akademi', 'arastirma', 'universite'],
+        'Medical': ['health', 'patient', 'doctor', 'treatment', 'medical', 'clinic', 'hospital', 'care', 'saglik', 'doktor', 'tedavi', 'hastane', 'klinik', 'hasta'],
+        'Government': ['ministry', 'department', 'gov', 'citizen', 'public', 'law', 'regulation', 'bakanlik', 'belediye', 'mudurluk', 'vatandas', 'resmi', 'kanun'],
+        'Technology': ['software', 'app', 'download', 'platform', 'developer', 'api', 'tech', 'saas', 'yazilim', 'uygulama', 'indir', 'teknoloji', 'gelistirici']
     }
 
     def analyze(self, data: SiteData) -> DetectionResult:

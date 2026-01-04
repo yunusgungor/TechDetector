@@ -63,36 +63,45 @@ class RulesEngine:
             # 4. Check HTML
             if 'html' in rule: 
                 for pattern in rule['html']:
-                    match = re.search(pattern, site_data.html, re.IGNORECASE)
-                    if match:
-                        confidence += 40
-                        evidence.append(f"HTML Pattern: {pattern[:20]}...")
-                        update_version(match)
+                    try:
+                        match = re.search(pattern, site_data.html, re.IGNORECASE)
+                        if match:
+                            confidence += 40
+                            evidence.append(f"HTML Pattern: {pattern[:20]}...")
+                            update_version(match)
+                    except re.error:
+                        pass # Skip invalid regex
 
             # 5. Check Script Src
             if 'script_src' in rule:
                 for pattern in rule['script_src']:
                     for script_url in site_data.scripts:
-                        match = re.search(pattern, script_url, re.IGNORECASE)
-                        if match:
-                            confidence += 50
-                            evidence.append(f"Script: {pattern}")
-                            update_version(match)
-                            break
+                        try:
+                            match = re.search(pattern, script_url, re.IGNORECASE)
+                            if match:
+                                confidence += 50
+                                evidence.append(f"Script: {pattern}")
+                                update_version(match)
+                                break
+                        except re.error:
+                            pass
 
             # 6. Check JS Global Variables / Content in Bundles
             if 'js' in rule:
-                for pattern in rule['js']:
+                for pattern in rule['js']: 
                     # Check in downloaded bundles
                     found_in_bundle = False
                     for bundle_content in site_data.js_bundles.values():
-                        match = re.search(pattern, bundle_content)
-                        if match:
-                            confidence += 80
-                            found_in_bundle = True
-                            evidence.append(f"JS Bundle Pattern: {pattern}")
-                            update_version(match)
-                            break
+                        try:
+                            match = re.search(pattern, bundle_content)
+                            if match:
+                                confidence += 80
+                                found_in_bundle = True
+                                evidence.append(f"JS Bundle Pattern: {pattern}")
+                                update_version(match)
+                                break
+                        except re.error:
+                            pass
                     if found_in_bundle: 
                         break
 
