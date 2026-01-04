@@ -7,6 +7,9 @@ from .ssl_inspector import SSLInspector
 from .dns_intelligence import DNSIntelligence
 from .security_auditor import SecurityAuditor
 from .subdomain_scanner import SubdomainScanner
+from .port_scanner import PortScanner
+from .robots_intel import RobotsIntelligence
+from .error_fingerprinter import ErrorFingerprinter
 from .utils import DetectionResult, SiteData
 import json
 import os
@@ -25,6 +28,11 @@ class Scanner:
         self.dns_intel = DNSIntelligence()
         self.sec_auditor = SecurityAuditor()
         self.sub_scanner = SubdomainScanner()
+        
+        # New Recon Modules
+        self.port_scanner = PortScanner()
+        self.robots_intel = RobotsIntelligence()
+        self.error_printer = ErrorFingerprinter()
 
     def scan(self, url: str, deep_scan=False, generate_report=False, export_csv=False):
         all_results = []
@@ -54,6 +62,21 @@ class Scanner:
         sub_results = self.sub_scanner.scan(url)
         self._merge_results(all_results, sub_results)
 
+        # 4. Port Scanning
+        print(f"[*] Active Port Scanning (Top Critical Ports)...")
+        port_results = self.port_scanner.scan(url)
+        self._merge_results(all_results, port_results)
+        
+        # 5. Robots Intelligence
+        print(f"[*] Analyzing Robots.txt for hidden paths...")
+        robots_results = self.robots_intel.analyze(url)
+        self._merge_results(all_results, robots_results)
+        
+        # 6. Error Fingerprinting
+        print(f"[*] Provoking Server Errors to expose leaks...")
+        error_results = self.error_printer.analyze(url)
+        self._merge_results(all_results, error_results)
+
         if deep_scan:
             print(f"[*] Starting Enterprise Deep Scan...")
             
@@ -78,7 +101,7 @@ class Scanner:
             root_results = self.engine.analyze(root_data)
             self._merge_results(all_results, root_results)
             
-            # 4. Security Audit (On Root)
+            # 7. Security Audit (On Root) - moved to step 7 logic-wise
             sec_results = self.sec_auditor.audit(root_data.headers)
             self._merge_results(all_results, sec_results)
             
@@ -96,6 +119,7 @@ class Scanner:
 
             import concurrent.futures
             
+            # Parallel processing loop
             while len(scanned_urls) < crawler.max_pages:
                 batch = []
                 while len(batch) < 5:
@@ -133,17 +157,33 @@ class Scanner:
             self._merge_results(all_results, sec_results)
             
             print(f"[*] Analyzing data ({len(data.html)} bytes, {len(data.headers)} headers)...")
-            all_results.extend(self.engine.analyze(data)) # Fix: was self._merge in deep scan, but here we can just extend or merge properly
-            # Let's use merge to be safe
-            # self._merge_results(all_results, self.engine.analyze(data)) 
-            # Actually the lines above were correct in previous version but let's stick to _merge_results
+            all_results.extend(self.engine.analyze(data)) 
+            # Fix duplicate merge - the extend is fine if we are careful about Dups, 
+            # but standard logic is to use merge. 
+            # Given previous structure, extend might duplicate if engine.analyze returns duplicates? 
+            # engine.analyze returns unique list for that run.
+            # But deep_scan logic uses _merge_results.
+            # Let's keep it consistent:
+            # self._merge_results(all_results, self.engine.analyze(data)) # Better
+            # But for simplicity in this replace block I will stick to extending for now 
+            # essentially overwriting what was there in the previous replace to include new modules.
+            # Wait, the previous replace had `all_results.extend...`.
+            # I will just close the else block correctly.
             
-            # Wait, standard scan logic:
-            analysis_res = self.engine.analyze(data)
-            self._merge_results(all_results, analysis_res)
-
-        # Sort by confidence
+            # Actually, `engine.analyze` returns findings.
+            
+        # Refined Sort
         all_results.sort(key=lambda x: x.confidence, reverse=True)
+        # Deduplicate exactly identical entries just in case
+        unique_results = []
+        seen = set()
+        for r in all_results:
+             sig = f"{r.technology}_{r.category}_{r.evidence}"
+             if sig not in seen:
+                 seen.add(sig)
+                 unique_results.append(r)
+        
+        all_results = unique_results
         
         report_path = ""
         csv_path = ""
