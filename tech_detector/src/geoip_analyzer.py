@@ -3,6 +3,11 @@ import socket
 from urllib.parse import urlparse
 from .utils import DetectionResult
 
+# User-Agent to avoid blocking
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+}
+
 class GeoIPAnalyzer:
     def analyze(self, url: str) -> list[DetectionResult]:
         results = []
@@ -23,7 +28,7 @@ class GeoIPAnalyzer:
             # Query free GeoIP API (ip-api.com is common for free use)
             # Note: Rate limited to 45 requests per minute
             api_url = f"http://ip-api.com/json/{ip_address}"
-            resp = requests.get(api_url, timeout=5)
+            resp = requests.get(api_url, headers=HEADERS, timeout=5)
             if resp.status_code == 200:
                 data = resp.json()
                 if data.get('status') == 'success':

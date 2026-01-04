@@ -6,6 +6,11 @@ from typing import List
 from .utils import DetectionResult
 import concurrent.futures
 
+# User-Agent to avoid blocking
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+}
+
 class SubdomainScanner:
     COMMON_SUBS = ['www', 'mail', 'remote', 'blog', 'webmail', 'server', 'ns1', 'ns2', 'smtp', 'secure', 'vpn', 'm', 'shop', 'ftp', 'mail2', 'test', 'portal', 'ns', 'ww1', 'host', 'support', 'dev', 'web', 'bbs', 'ww2', 'error', 'ww3', 'www1', 'www2', 'www3', 'www4', 'www5', 'www6', 'www7', 'www8', 'www9', 'beta', 'admin', 'api', 'cdn', 'app', 'staging', 'jenkins', 'jira', 'gitlab']
 
@@ -46,7 +51,7 @@ class SubdomainScanner:
 
         # 2. CRT.sh (Certificate Transparency)
         try:
-            r = requests.get(f"https://crt.sh/?q=%.{domain}&output=json", timeout=10)
+            r = requests.get(f"https://crt.sh/?q=%.{domain}&output=json", headers=HEADERS, timeout=10)
             if r.status_code == 200:
                 data = r.json()
                 for entry in data:

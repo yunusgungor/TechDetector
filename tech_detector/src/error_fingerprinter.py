@@ -11,7 +11,10 @@ class ErrorFingerprinter:
         results = []
         
         try:
-            resp = requests.get(error_url, timeout=5, verify=False)
+            HEADERS = {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            }
+            resp = requests.get(error_url, headers=HEADERS, timeout=5, verify=False)
             # We expect 404, but the headers or body might reveal info
             
             evidence = []

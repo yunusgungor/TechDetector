@@ -13,7 +13,8 @@ class Reporter:
 
     def generate_csv(self, url: str, results: List[DetectionResult]):
         import csv
-        filename = f"report_{urlparse(url).netloc}_{int(datetime.now().timestamp())}.csv"
+        safe_loc = urlparse(url).netloc.replace(":", "_")
+        filename = f"report_{safe_loc}_{int(datetime.now().timestamp())}.csv"
         path = os.path.join(self.output_dir, filename)
         
         with open(path, 'w', newline='', encoding='utf-8') as f:
@@ -25,7 +26,8 @@ class Reporter:
         return path
 
     def generate_html(self, url: str, results: List[DetectionResult], scanned_urls: List[str]):
-        filename = f"report_{urlparse(url).netloc}_{int(datetime.now().timestamp())}.html"
+        safe_loc = urlparse(url).netloc.replace(":", "_")
+        filename = f"report_{safe_loc}_{int(datetime.now().timestamp())}.html"
         path = os.path.join(self.output_dir, filename)
         
         # Prepare Data for Charts

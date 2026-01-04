@@ -18,8 +18,10 @@ class SitemapParser:
         for sitemap_url in self.sitemap_urls:
             try:
                 print(f"[*] Checking sitemap: {sitemap_url}")
-                # Use a generic UA
-                headers = {'User-Agent': 'Mozilla/5.0 (compatible; TechDetector/1.0)'}
+                # Use a specific, common User-Agent
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                }
                 response = requests.get(sitemap_url, headers=headers, timeout=10, verify=False)
                 
                 if response.status_code == 200:

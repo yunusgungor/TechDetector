@@ -31,7 +31,10 @@ class FileFuzzer:
             target = urljoin(url, path)
             try:
                 # Disable stream to get content
-                resp = requests.get(target, timeout=3, verify=False, stream=False)
+                HEADERS = {
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                }
+                resp = requests.get(target, headers=HEADERS, timeout=3, verify=False, stream=False)
                 
                 # Only trust 200 OK
                 if resp.status_code == 200:

@@ -209,6 +209,11 @@ class Scanner:
             secret_results = self.secret_scanner.scan(data)
             self._merge_results(all_results, secret_results)
 
+        # --- Phase: Vulnerability Correlation (New) ---
+        print("[*] Correlating Versions with CVE Database...")
+        vuln_results = self.sec_auditor.check_vulnerabilities(all_results)
+        self._merge_results(all_results, vuln_results)
+
         # --- Phase 4: Reporting ---
         all_results.sort(key=lambda x: x.confidence, reverse=True)
         # Dedup
@@ -233,6 +238,9 @@ class Scanner:
         return all_results, (root_data if deep_scan else data), report_path, csv_path
 
     def _merge_results(self, main_list: List[DetectionResult], new_list: List[DetectionResult]):
+        if not new_list:
+            return
+            
         # Merge logic: if tech exists, take max confidence
         existing_map = {r.technology: r for r in main_list}
         

@@ -3,6 +3,10 @@ from urllib.parse import urlparse
 from typing import List
 from .utils import DetectionResult
 
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+}
+
 class RDAPClient:
     def analyze(self, url: str) -> List[DetectionResult]:
         results = []
@@ -15,7 +19,7 @@ class RDAPClient:
             # rdap.org is a reliable open redirector
             rdap_url = f"https://rdap.org/domain/{domain}"
             
-            resp = requests.get(rdap_url, timeout=5)
+            resp = requests.get(rdap_url, headers=HEADERS, timeout=5)
             if resp.status_code == 200:
                 data = resp.json()
                 

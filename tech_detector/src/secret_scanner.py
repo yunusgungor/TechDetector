@@ -32,7 +32,10 @@ class SecretScanner:
             if not text: return
             
             for name, pattern in self.PATTERNS.items():
-                matches = re.finditer(pattern, text) # Use finditer for grouping
+                try:
+                    matches = re.finditer(pattern, text) # Use finditer for grouping
+                except re.error:
+                    continue # Skip bad regexes
                 hit_count = 0
                 
                 for match_obj in matches:

@@ -30,7 +30,10 @@ class APIDiscovery:
             target = urljoin(url, path)
             try:
                 # Use a short timeout
-                resp = requests.get(target, timeout=3, verify=False, allow_redirects=True)
+                HEADERS = {
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                }
+                resp = requests.get(target, headers=HEADERS, timeout=3, verify=False, allow_redirects=True)
                 if resp.status_code == 200:
                     # Basic validation to ensure it's not just a custom 200 page
                     content_type = resp.headers.get('Content-Type', '').lower()

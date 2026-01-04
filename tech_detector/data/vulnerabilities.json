@@ -1,0 +1,58 @@
+{
+    "jQuery": {
+        "rules": [
+            {
+                "max_version": "3.5.0",
+                "cve": "CVE-2020-11022",
+                "severity": "Medium",
+                "description": "Cross-site scripting (XSS) via HTML regex"
+            },
+            {
+                "max_version": "3.4.0",
+                "cve": "CVE-2019-11358",
+                "severity": "Medium",
+                "description": "Prototype Pollution in extend()"
+            }
+        ]
+    },
+    "Bootstrap": {
+        "rules": [
+            {
+                "max_version": "3.4.1",
+                "cve": "CVE-2019-8331",
+                "severity": "Medium",
+                "description": "XSS in tooltip/popover"
+            }
+        ]
+    },
+    "Lodash": {
+        "rules": [
+            {
+                "max_version": "4.17.15",
+                "cve": "CVE-2019-10744",
+                "severity": "High",
+                "description": "Prototype Pollution in defaultsDeep"
+            }
+        ]
+    },
+    "Nginx": {
+        "rules": [
+            {
+                "max_version": "1.14.0",
+                "cve": "CVE-2018-16843",
+                "severity": "Medium",
+                "description": "HTTP2 Memory Leak"
+            }
+        ]
+    },
+    "Apache": {
+        "rules": [
+            {
+                "max_version": "2.4.49",
+                "cve": "CVE-2021-41773",
+                "severity": "Critical",
+                "description": "Path Traversal & RCE"
+            }
+        ]
+    }
+}
