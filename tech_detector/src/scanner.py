@@ -20,31 +20,25 @@ class Scanner:
 
     def scan(self, url: str, deep_scan=False, generate_report=False):
         all_results = []
-        scanned_count = 0
+        scanned_urls = []
         
         if deep_scan:
             print(f"[*] Starting Deep Scan on {url}...")
             crawler = Crawler(url, max_pages=5)
             
-            # 1. Fetch Home
-            # 2. Extract Links
-            # 3. Queue Loop
-            
-            # For simplicity in this version, we pre-fill queue
-            # And loop until empty
-            
             target = url
             while target:
                 print(f"[*] Scanning page: {target}")
                 data = self.fetcher.fetch(target)
+                scanned_urls.append(target)
+                
                 page_results = self.engine.analyze(data)
                 
                 # Deduplicate results
                 self._merge_results(all_results, page_results)
-                scanned_count += 1
                 
                 # Extract next links
-                if scanned_count < 5: # Limit depth
+                if len(scanned_urls) < 5: # Limit depth
                     crawler.extract_links(data.html, data.final_url)
                     
                 target = crawler.get_next_url()
@@ -52,17 +46,17 @@ class Scanner:
         else:
             print(f"[*] Fetching {url}...")
             data = self.fetcher.fetch(url)
+            scanned_urls.append(data.final_url)
             
             print(f"[*] Analyzing data ({len(data.html)} bytes, {len(data.headers)} headers)...")
             all_results = self.engine.analyze(data)
-            scanned_count = 1
 
         # Sort by confidence
         all_results.sort(key=lambda x: x.confidence, reverse=True)
         
         report_path = ""
         if generate_report:
-            report_path = self.reporter.generate_html(url, all_results, scanned_count)
+            report_path = self.reporter.generate_html(url, all_results, scanned_urls)
             
         return all_results, data, report_path
 
