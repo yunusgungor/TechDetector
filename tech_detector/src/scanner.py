@@ -15,6 +15,7 @@ from .secret_scanner import SecretScanner
 from .api_discovery import APIDiscovery
 from .file_fuzzer import FileFuzzer
 from .rdap_client import RDAPClient
+from .context_analyzer import ContextAnalyzer
 from .utils import DetectionResult, SiteData
 import json
 import os
@@ -44,6 +45,7 @@ class Scanner:
         self.api_discovery = APIDiscovery()
         self.file_fuzzer = FileFuzzer()
         self.rdap_client = RDAPClient()
+        self.context_analyzer = ContextAnalyzer()
 
     def scan(self, url: str, deep_scan=False, passive_mode=False, threads=5, generate_report=False, export_csv=False):
         all_results = []
@@ -140,6 +142,10 @@ class Scanner:
             secret_results = self.secret_scanner.scan(root_data)
             self._merge_results(all_results, secret_results)
             
+            # Context Analysis (On Root only usually enough)
+            ctx_result = self.context_analyzer.analyze(root_data)
+            self._merge_results(all_results, [ctx_result])
+            
             crawler.extract_links(root_data.html, root_data.final_url)
 
             # Threaded crawling
@@ -191,6 +197,10 @@ class Scanner:
             # Security Audit
             sec_results = self.sec_auditor.audit(data.headers)
             self._merge_results(all_results, sec_results)
+            
+            # Context Analysis
+            ctx_result = self.context_analyzer.analyze(data)
+            self._merge_results(all_results, [ctx_result])
             
             print(f"[*] Analyzing content...")
             all_results.extend(self.engine.analyze(data)) 
