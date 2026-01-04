@@ -12,11 +12,20 @@ def main():
     parser.add_argument("--deep", "-d", action="store_true", help="Enable Deep Crawler (scans sub-pages)")
     parser.add_argument("--report", "-r", action="store_true", help="Generate HTML Report")
     parser.add_argument("--csv", action="store_true", help="Generate CSV Report")
+    parser.add_argument("--passive", action="store_true", help="Passive Mode (Skip active port/error scans)")
+    parser.add_argument("--threads", type=int, default=5, help="Number of crawl threads (default: 5)")
     
     args = parser.parse_args()
     
     scanner = Scanner()
-    results, data, report_path, csv_path = scanner.scan(args.url, deep_scan=args.deep, generate_report=args.report, export_csv=args.csv)
+    results, data, report_path, csv_path = scanner.scan(
+        args.url, 
+        deep_scan=args.deep, 
+        passive_mode=args.passive,
+        threads=args.threads,
+        generate_report=args.report, 
+        export_csv=args.csv
+    )
     
     if args.json:
         output = [

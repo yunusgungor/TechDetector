@@ -10,10 +10,12 @@ from .subdomain_scanner import SubdomainScanner
 from .port_scanner import PortScanner
 from .robots_intel import RobotsIntelligence
 from .error_fingerprinter import ErrorFingerprinter
+from .geoip_analyzer import GeoIPAnalyzer
 from .utils import DetectionResult, SiteData
 import json
 import os
 from typing import List, Dict
+import concurrent.futures
 
 class Scanner:
     def __init__(self, fingerprints_path=None):
@@ -29,18 +31,24 @@ class Scanner:
         self.sec_auditor = SecurityAuditor()
         self.sub_scanner = SubdomainScanner()
         
-        # New Recon Modules
+        # reconnaissance modules
         self.port_scanner = PortScanner()
         self.robots_intel = RobotsIntelligence()
         self.error_printer = ErrorFingerprinter()
+        self.geoip = GeoIPAnalyzer()
 
-    def scan(self, url: str, deep_scan=False, generate_report=False, export_csv=False):
+    def scan(self, url: str, deep_scan=False, passive_mode=False, threads=5, generate_report=False, export_csv=False):
         all_results = []
         scanned_urls = []
         
-        print(f"[*] Starting Security & Infrastructure Analysis for {url}...")
+        print(f"[*] Starting Analysis for {url} [Deep={deep_scan}, Passive={passive_mode}, Threads={threads}]...")
 
-        # 1. SSL Check
+        # --- Phase 1: Infrastructure (Always Safe-ish) ---
+        print(f"[*] performing GeoIP & Infrastructure Analysis...")
+        geo_results = self.geoip.analyze(url)
+        self._merge_results(all_results, geo_results)
+
+        # SSL Check
         ssl_info = self.ssl_inspector.inspect(url)
         if 'issuer_org' in ssl_info:
              if 'Cloudflare' in ssl_info['issuer_org']:
@@ -52,77 +60,73 @@ class Scanner:
              elif 'Amazon' in ssl_info['issuer_org']:
                  all_results.append(DetectionResult("AWS", "PaaS", 80, "SSL Issuer: Amazon"))
 
-        # 2. DNS Intelligence
-        print(f"[*] Querying DNS Records (MX, TXT)...")
+        # DNS 
+        print(f"[*] Querying DNS Records...")
         dns_results = self.dns_intel.analyze(url)
         self._merge_results(all_results, dns_results)
 
-        # 3. Subdomain Scanning
-        print(f"[*] Enumerating Subdomains...")
-        sub_results = self.sub_scanner.scan(url)
-        self._merge_results(all_results, sub_results)
+        # --- Phase 2: Active Recon (Skip if Passive) ---
+        if not passive_mode:
+            # Subdomains (DNS enumeration is semi-passive but can be noisy if bruteforce, here it's simple check)
+            # We treat subdomain check as okay-ish but Port/Error are definitely active.
+            print(f"[*] Enumerating Subdomains...")
+            sub_results = self.sub_scanner.scan(url)
+            self._merge_results(all_results, sub_results)
 
-        # 4. Port Scanning
-        print(f"[*] Active Port Scanning (Top Critical Ports)...")
-        port_results = self.port_scanner.scan(url)
-        self._merge_results(all_results, port_results)
-        
-        # 5. Robots Intelligence
-        print(f"[*] Analyzing Robots.txt for hidden paths...")
-        robots_results = self.robots_intel.analyze(url)
-        self._merge_results(all_results, robots_results)
-        
-        # 6. Error Fingerprinting
-        print(f"[*] Provoking Server Errors to expose leaks...")
-        error_results = self.error_printer.analyze(url)
-        self._merge_results(all_results, error_results)
-
-        if deep_scan:
-            print(f"[*] Starting Enterprise Deep Scan...")
+            print(f"[*] Active Port Scanning...")
+            port_results = self.port_scanner.scan(url)
+            self._merge_results(all_results, port_results)
             
-            # Sitemap Intelligence
+            print(f"[*] Analyzing Robots.txt...")
+            robots_results = self.robots_intel.analyze(url)
+            self._merge_results(all_results, robots_results)
+            
+            print(f"[*] Error Fingerprinting...")
+            error_results = self.error_printer.analyze(url)
+            self._merge_results(all_results, error_results)
+        else:
+            print("[*] Passive Mode: Skipping Port Scan, Subdomains, Error Provocation.")
+
+        # --- Phase 3: Content Analysis (Crawling) ---
+        if deep_scan:
+            print(f"[*] Starting Deep Scan using {threads} threads...")
+            
+            # Sitemap Intelligence (Safe to do in passive too ideally, just fetching xml)
             sitemap_parser = SitemapParser(url)
             sitemap_urls = sitemap_parser.get_urls(limit=10)
             
             if sitemap_urls:
-                print(f"[*] Intelligent Sitemap Discovery: Found {len(sitemap_urls)} priority URLs.")
+                print(f"[*] Sitemap found {len(sitemap_urls)} priority URLs.")
             
-            # Setup Crawler
             crawler = Crawler(url, max_pages=15) 
             for sm_url in sitemap_urls:
                 if sm_url not in crawler.visited and sm_url not in crawler.queue:
                      crawler.queue.append(sm_url)
 
+            # Fetch Root
             scanned_urls.append(url)
-            
-            # Initial fetch & analyze root
             print(f"[*] Fetching root: {url}")
             root_data = self.fetcher.fetch(url)
             root_results = self.engine.analyze(root_data)
             self._merge_results(all_results, root_results)
             
-            # 7. Security Audit (On Root) - moved to step 7 logic-wise
+            # Security Audit
             sec_results = self.sec_auditor.audit(root_data.headers)
             self._merge_results(all_results, sec_results)
             
-            # Seed extractor
             crawler.extract_links(root_data.html, root_data.final_url)
 
-            # Helpers for threading...
+            # Threaded crawling
             def process_url(target_url):
-                print(f"[*] Thread scanning: {target_url}")
+                # print(f"[*] Thread: {target_url}")
                 try:
                     return self.fetcher.fetch(target_url)
-                except Exception as e:
-                    print(f"[!] Error scanning {target_url}: {e}")
+                except Exception:
                     return None
 
-            import concurrent.futures
-            
-            # Parallel processing loop
             while len(scanned_urls) < crawler.max_pages:
                 batch = []
-                while len(batch) < 5:
+                while len(batch) < threads:
                     next_url = crawler.get_next_url()
                     if not next_url:
                         break
@@ -132,7 +136,7 @@ class Scanner:
                     break
                     
                 print(f"[*] Processing batch of {len(batch)} URLs...")
-                with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
                     future_to_url = {executor.submit(process_url, u): u for u in batch}
                     for future in concurrent.futures.as_completed(future_to_url):
                         u = future_to_url[future]
@@ -144,37 +148,24 @@ class Scanner:
                                 self._merge_results(all_results, page_results)
                                 if len(scanned_urls) < crawler.max_pages:
                                     crawler.extract_links(data.html, data.final_url)
-                        except Exception as exc:
-                            pass # Silent fail for thread
+                        except Exception:
+                            pass
                 
         else:
+            # Single Page
             print(f"[*] Fetching {url}...")
             data = self.fetcher.fetch(url)
             scanned_urls.append(data.final_url)
             
-            # Security Audit
             sec_results = self.sec_auditor.audit(data.headers)
             self._merge_results(all_results, sec_results)
             
-            print(f"[*] Analyzing data ({len(data.html)} bytes, {len(data.headers)} headers)...")
+            print(f"[*] Analyzing content...")
             all_results.extend(self.engine.analyze(data)) 
-            # Fix duplicate merge - the extend is fine if we are careful about Dups, 
-            # but standard logic is to use merge. 
-            # Given previous structure, extend might duplicate if engine.analyze returns duplicates? 
-            # engine.analyze returns unique list for that run.
-            # But deep_scan logic uses _merge_results.
-            # Let's keep it consistent:
-            # self._merge_results(all_results, self.engine.analyze(data)) # Better
-            # But for simplicity in this replace block I will stick to extending for now 
-            # essentially overwriting what was there in the previous replace to include new modules.
-            # Wait, the previous replace had `all_results.extend...`.
-            # I will just close the else block correctly.
-            
-            # Actually, `engine.analyze` returns findings.
-            
-        # Refined Sort
+
+        # --- Phase 4: Reporting ---
         all_results.sort(key=lambda x: x.confidence, reverse=True)
-        # Deduplicate exactly identical entries just in case
+        # Dedup
         unique_results = []
         seen = set()
         for r in all_results:
@@ -193,7 +184,7 @@ class Scanner:
         if export_csv:
             csv_path = self.reporter.generate_csv(url, all_results)
             
-        return all_results, data, report_path, csv_path
+        return all_results, (root_data if deep_scan else data), report_path, csv_path
 
     def _merge_results(self, main_list: List[DetectionResult], new_list: List[DetectionResult]):
         # Merge logic: if tech exists, take max confidence
