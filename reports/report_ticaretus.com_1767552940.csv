@@ -1,9 +1,0 @@
-Technology,Category,Confidence,Version,Evidence
-Google Workspace,Email,100%,MX: smtp.google.com.,
-Found 2 Subdomains,Reconnaissance,100%,,"www.ticaretus.com, shop.ticaretus.com"
-Framer,CMS,100%,,"Header: Server, Meta: generator, HTML Pattern: framerusercontent\.c..., HTML Pattern: <!-- Made in Framer..."
-Security Grade: F,Security Audit,100%,,Score: 40/100. Missing 4 critical headers.
-React,JavaScript Frameworks,90%,,Implied by Framer
-Hotjar,Analytics,80%,,JS Bundle Pattern: hj
-Google Analytics,Analytics,50%,,Script: googletagmanager\.com/gtag/js
-Facebook Pixel,Analytics,40%,,HTML Pattern: fbq\('init'...

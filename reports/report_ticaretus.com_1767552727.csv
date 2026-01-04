@@ -1,6 +1,0 @@
-Technology,Category,Confidence,Version,Evidence
-Framer,CMS,100%,,"Header: Server, Meta: generator, HTML Pattern: framerusercontent\.c..., HTML Pattern: <!-- Made in Framer..."
-React,JavaScript Frameworks,90%,,Implied by Framer
-Hotjar,Analytics,80%,,JS Bundle Pattern: hj
-Google Analytics,Analytics,50%,,Script: googletagmanager\.com/gtag/js
-Facebook Pixel,Analytics,40%,,HTML Pattern: fbq\('init'...
