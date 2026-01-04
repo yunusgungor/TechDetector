@@ -23,25 +23,60 @@ class Scanner:
         scanned_urls = []
         
         if deep_scan:
-            print(f"[*] Starting Deep Scan on {url}...")
-            crawler = Crawler(url, max_pages=5)
+            print(f"[*] Starting Deep Scan on {url} (High-Speed Mode)...")
+            crawler = Crawler(url, max_pages=10) # Increased max pages due to higher speed
             
-            target = url
-            while target:
-                print(f"[*] Scanning page: {target}")
-                data = self.fetcher.fetch(target)
-                scanned_urls.append(target)
+            # Initial fetch
+            print(f"[*] Fetching root: {url}")
+            root_data = self.fetcher.fetch(url)
+            scanned_urls.append(url)
+            
+            # Helper for thread workers
+            def process_url(target_url):
+                print(f"[*] Thread scanning: {target_url}")
+                try:
+                    return self.fetcher.fetch(target_url)
+                except Exception as e:
+                    print(f"[!] Error scanning {target_url}: {e}")
+                    return None
+
+            # Seed crawler with root
+            crawler.extract_links(root_data.html, root_data.final_url)
+            
+            # Analyze root
+            root_results = self.engine.analyze(root_data)
+            self._merge_results(all_results, root_results)
+
+            import concurrent.futures
+            
+            # Parallel processing loop
+            # We fetch in batches
+            while len(scanned_urls) < crawler.max_pages:
+                # Get next batch of URLs
+                batch = []
+                while len(batch) < 5: # Batch size
+                    next_url = crawler.get_next_url()
+                    if not next_url:
+                        break
+                    batch.append(next_url)
                 
-                page_results = self.engine.analyze(data)
-                
-                # Deduplicate results
-                self._merge_results(all_results, page_results)
-                
-                # Extract next links
-                if len(scanned_urls) < 5: # Limit depth
-                    crawler.extract_links(data.html, data.final_url)
+                if not batch:
+                    break
                     
-                target = crawler.get_next_url()
+                print(f"[*] Processing batch of {len(batch)} URLs...")
+                with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+                    future_to_url = {executor.submit(process_url, u): u for u in batch}
+                    for future in concurrent.futures.as_completed(future_to_url):
+                        u = future_to_url[future]
+                        try:
+                            data = future.result()
+                            if data:
+                                scanned_urls.append(u)
+                                page_results = self.engine.analyze(data)
+                                self._merge_results(all_results, page_results)
+                                crawler.extract_links(data.html, data.final_url)
+                        except Exception as exc:
+                            print(f"[!] {u} generated an exception: {exc}")
                 
         else:
             print(f"[*] Fetching {url}...")

@@ -17,16 +17,29 @@ class RulesEngine:
         for tech_name, rules in self.technologies.items():
             confidence = 0
             evidence = []
-            
+            version = None
+
+            # Helper to update version if found
+            def update_version(match):
+                nonlocal version
+                if match and match.groups():
+                    version = match.group(1)
+
             # 1. Check Headers
             if 'headers' in rules:
                 for h_key, h_pattern in rules['headers'].items():
                     # Case insensitive header search
                     site_header_val = next((v for k, v in site_data.headers.items() if k.lower() == h_key.lower()), None)
                     if site_header_val:
-                        if h_pattern == "" or re.search(h_pattern, site_header_val, re.IGNORECASE):
+                        if h_pattern == "":
                             confidence += 50
                             evidence.append(f"Header: {h_key}")
+                        else:
+                            match = re.search(h_pattern, site_header_val, re.IGNORECASE)
+                            if match:
+                                confidence += 50
+                                evidence.append(f"Header: {h_key}")
+                                update_version(match)
 
             # 2. Check Cookies
             if 'cookies' in rules:
@@ -40,25 +53,30 @@ class RulesEngine:
                 for m_key, m_pattern in rules['meta'].items():
                     if m_key.lower() in site_data.meta_tags:
                         val = site_data.meta_tags[m_key.lower()]
-                        if re.search(m_pattern, val, re.IGNORECASE):
+                        match = re.search(m_pattern, val, re.IGNORECASE)
+                        if match:
                             confidence += 60
                             evidence.append(f"Meta: {m_key}")
+                            update_version(match)
 
             # 4. Check HTML (Regex on raw body)
             if 'html' in rules: # List of patterns
                 for pattern in rules['html']:
-                    if re.search(pattern, site_data.html, re.IGNORECASE):
+                    match = re.search(pattern, site_data.html, re.IGNORECASE)
+                    if match:
                         confidence += 40
                         evidence.append(f"HTML Pattern: {pattern[:20]}...")
+                        update_version(match)
 
             # 5. Check Script Src
             if 'scriptSrc' in rules:
                 for pattern in rules['scriptSrc']:
                     for script_url in site_data.scripts:
-                        if re.search(pattern, script_url, re.IGNORECASE):
+                        match = re.search(pattern, script_url, re.IGNORECASE)
+                        if match:
                             confidence += 50
-                            # Deduce version if possible?
                             evidence.append(f"Script: {pattern}")
+                            update_version(match)
                             break
 
             # 6. Check JS Global Variables / Content in Bundles
@@ -67,10 +85,12 @@ class RulesEngine:
                     # Check in downloaded bundles
                     found_in_bundle = False
                     for bundle_content in site_data.js_bundles.values():
-                        if re.search(pattern, bundle_content):
+                        match = re.search(pattern, bundle_content)
+                        if match:
                             confidence += 80
                             found_in_bundle = True
                             evidence.append(f"JS Bundle Pattern: {pattern}")
+                            update_version(match)
                             break
                     if found_in_bundle: 
                         break
@@ -101,7 +121,8 @@ class RulesEngine:
                     technology=tech_name,
                     category=cat_name,
                     confidence=confidence,
-                    evidence=", ".join(evidence)
+                    evidence=", ".join(evidence),
+                    version=version
                 ))
 
         # Handle 'implies'

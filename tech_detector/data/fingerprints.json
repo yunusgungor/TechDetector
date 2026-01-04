@@ -272,7 +272,8 @@
         },
         "Cloudflare": {
             "cats": [
-                31
+                31,
+                16
             ],
             "website": "https://cloudflare.com",
             "headers": {
@@ -281,6 +282,38 @@
             },
             "cookies": {
                 "__cfduid": ""
+            }
+        },
+        "AWS WAF": {
+            "cats": [
+                16
+            ],
+            "website": "https://aws.amazon.com/waf/",
+            "headers": {
+                "X-Amz-Cf-Id": "",
+                "X-Amzn-Trace-Id": ""
+            }
+        },
+        "Akamai": {
+            "cats": [
+                31,
+                16
+            ],
+            "website": "https://akamai.com",
+            "headers": {
+                "X-Akamai-Transformed": "",
+                "Server": "AkamaiGHost"
+            }
+        },
+        "Imperva": {
+            "cats": [
+                16,
+                31
+            ],
+            "website": "https://www.imperva.com",
+            "headers": {
+                "X-Iinfo": "",
+                "X-CDN": "Incapsula"
             }
         },
         "AWS": {
